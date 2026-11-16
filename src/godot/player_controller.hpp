@@ -18,6 +18,10 @@ class PlayerController : public Node3D {
 	GDCLASS(PlayerController, Node3D)
 
 public:
+	void set_indoor_distance(float d) { indoor_distance_ = d; }
+	float get_indoor_distance() const { return indoor_distance_; }
+	void set_indoor_pitch(float p) { indoor_pitch_ = p; }
+	float get_indoor_pitch() const { return indoor_pitch_; }
 	void _ready() override;
 	void _physics_process(double delta) override;
 	void _process(double delta) override;
@@ -71,6 +75,9 @@ private:
 	String prompt_;
 	Vector3 cam_focus_;
 	bool cam_init_ = false;
+	float cam_in_ = 0.0f;
+	float indoor_distance_ = 11.0f;
+	float indoor_pitch_ = 0.12f;
 
 	std::deque<Step> steps_;
 	double step_t_ = 0.0;

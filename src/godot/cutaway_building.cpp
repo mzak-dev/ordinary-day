@@ -36,6 +36,11 @@ struct Room {
 	Color light;
 	bool has_light = false;
 	bool window = true;
+	// Back layer (rooms behind the walkable ones)
+	bool open = false;          // no wall between this back room and the room in front
+	bool divider = false;       // wall at x0 inside the back layer
+	bool divider_door = false;  // ...with a doorway in it
+	std::vector<int> doorways;  // front rooms: openings into the back layer (voxel x)
 };
 
 } // namespace
@@ -73,8 +78,8 @@ void CutawayBuilding::configure(const Dictionary &def) {
 	const uint32_t ceiling = parse_hex_color("#d9d5cc");
 	const uint32_t radiator = parse_hex_color("#e4e1da");
 
+	auto parse_rooms = [&](const Array &room_defs, bool back) {
 	std::vector<Room> rooms;
-	Array room_defs = def.get("rooms", Array());
 	for (int64_t i = 0; i < room_defs.size(); ++i) {
 		Dictionary r = room_defs[i];
 		Room room;
@@ -87,7 +92,14 @@ void CutawayBuilding::configure(const Dictionary &def) {
 		room.low = room.has_low ? parse_hex_color(low) : room.wall;
 		room.floor_col = parse_hex_color(r.get("floor_col", "#7a6a5a"));
 		room.floor_kind = r.get("floor_kind", "planks");
-		room.window = bool(r.get("window", true));
+		room.window = bool(r.get("window", !back));
+		room.open = bool(r.get("open", false));
+		room.divider = bool(r.get("divider", false));
+		room.divider_door = bool(r.get("divider_door", false));
+		Array dw = r.get("doorways", Array());
+		for (int64_t k = 0; k < dw.size(); ++k) {
+			room.doorways.push_back(V(double(dw[k]) - x0_));
+		}
 		String light = r.get("light", "#ffe0a0");
 		room.has_light = !light.is_empty();
 		if (room.has_light) {
@@ -95,14 +107,24 @@ void CutawayBuilding::configure(const Dictionary &def) {
 		}
 		rooms.push_back(room);
 	}
-	auto room_at = [&](int floor, int x) -> const Room * {
-		for (const Room &r : rooms) {
+	return rooms;
+	};
+	std::vector<Room> rooms = parse_rooms(def.get("rooms", Array()), false);
+	std::vector<Room> backs = parse_rooms(def.get("back_rooms", Array()), true);
+	auto find_in = [](const std::vector<Room> &list, int floor, int x) -> const Room * {
+		for (const Room &r : list) {
 			if (r.floor == floor && x >= r.x0 && x < r.x1) {
 				return &r;
 			}
 		}
 		return nullptr;
 	};
+	auto room_at = [&](int floor, int x) { return find_in(rooms, floor, x); };
+	auto back_at = [&](int floor, int x) { return find_in(backs, floor, x); };
+	// The back layer sits between the outer back wall (z 0-1) and an inner
+	// wall at Bz..Bz+1 whose front face is where the old back wall was.
+	const bool has_back = def.has("back_z");
+	const int Bz = has_back ? V(double(def.get("back_z", z0)) - z0) : 0;
 
 	Dictionary stair = def.get("stair_hole", Dictionary());
 	const bool has_stair = !stair.is_empty();
@@ -120,11 +142,13 @@ void CutawayBuilding::configure(const Dictionary &def) {
 	for (int f = 0; f < floors; ++f) {
 		const int yb = f * FH;
 		for (int x = 0; x < W; ++x) {
-			const Room *r = room_at(f, x);
-			uint32_t fc = r ? r->floor_col : roof;
-			String kind = r ? r->floor_kind : String("planks");
+			const Room *rf = room_at(f, x);
+			const Room *rb = has_back ? back_at(f, x) : nullptr;
 			for (int z = 0; z < Ds; ++z) {
-				if (has_stair && f > 0 && x >= sh_x0 && x < sh_x1 && z >= 2 && z < sh_z1) {
+				const Room *r = (has_back && z < Bz + 2 && rb && !rb->open) ? rb : rf;
+				uint32_t fc = r ? r->floor_col : roof;
+				String kind = r ? r->floor_kind : String("planks");
+				if (has_stair && f > 0 && x >= sh_x0 && x < sh_x1 && z >= (has_back ? Bz + 2 : 2) && z < sh_z1) {
 					continue;
 				}
 				uint32_t c = fc;
@@ -151,8 +175,7 @@ void CutawayBuilding::configure(const Dictionary &def) {
 		}
 
 		// ------------------------------------------------------------ back wall
-		for (int x = 0; x < W; ++x) {
-			const Room *r = room_at(f, x);
+		auto paint_wall = [&](int x, int z_out, int z_in, int dir, const Room *r) {
 			uint32_t wall_c = r ? r->wall : outer;
 			uint32_t low_c = r ? r->low : outer;
 			int low_top = yb + 2 + V(1.2);
@@ -161,19 +184,59 @@ void CutawayBuilding::configure(const Dictionary &def) {
 				if (r && r->has_low) {
 					c = y < low_top ? low_c : (y == low_top ? shade(low_c, 0.75f) : wall_c);
 				}
-				g.set(x, y, 0, outer);
-				g.set(x, y, 1, c);
+				if (z_out >= 0) {
+					g.set(x, y, z_out, outer);
+				}
+				g.set(x, y, z_in, c);
 			}
 			if (r) {
-				g.set(x, yb + 2, 2, shade(r->has_low ? low_c : wall_c, 0.7f)); // skirting board
+				g.set(x, yb + 2, z_in + dir, shade(r->has_low ? low_c : wall_c, 0.7f)); // skirting board
+			}
+		};
+		for (int x = 0; x < W; ++x) {
+			const Room *r = room_at(f, x);
+			const Room *b = has_back ? back_at(f, x) : nullptr;
+			if (!has_back || (b && b->open)) {
+				paint_wall(x, 0, 1, 1, r);
+				continue;
+			}
+			if (b) {
+				paint_wall(x, 0, 1, 1, b);       // outer wall of the back room
+				paint_wall(x, -1, Bz, -1, b);    // inner wall, back face
+				paint_wall(x, -1, Bz + 1, 1, r); // inner wall, front face
+			} else {
+				for (int z = 0; z <= Bz; ++z) {
+					for (int y = yb + 2; y < yb + FH; ++y) {
+						g.set(x, y, z, outer);
+					}
+				}
+				paint_wall(x, -1, Bz + 1, 1, r);
+			}
+		}
+		// Doorways from the walkable rooms into the back layer.
+		for (const Room &r : rooms) {
+			if (r.floor != f || !has_back) {
+				continue;
+			}
+			for (int dx : r.doorways) {
+				const Room *b = back_at(f, dx);
+				if (!b || b->open) {
+					continue;
+				}
+				int hw = V(0.5), top = yb + 2 + V(2.15);
+				for (int x = dx - hw - 1; x <= dx + hw; ++x) {
+					for (int y = yb + 2; y <= top; ++y) {
+						bool frame = x == dx - hw - 1 || x == dx + hw || y == top;
+						for (int z = Bz - 1; z <= Bz + 2; ++z) {
+							g.set(x, y, z, frame && z >= Bz && z <= Bz + 1 ? white : 0u);
+						}
+					}
+				}
 			}
 		}
 
 		// ------------------------------------------------------------ windows
-		for (const Room &r : rooms) {
-			if (r.floor != f || !r.window || r.x1 - r.x0 < V(2.0)) {
-				continue;
-			}
+		auto place_window = [&](const Room &r) {
 			int ww = std::min(V(1.5), r.x1 - r.x0 - V(1.0));
 			int wh = V(1.3);
 			int cx = (r.x0 + r.x1) / 2;
@@ -194,6 +257,23 @@ void CutawayBuilding::configure(const Dictionary &def) {
 					}
 				}
 			}
+		};
+		for (const Room &r : rooms) {
+			if (r.floor != f || !r.window || r.x1 - r.x0 < V(2.0)) {
+				continue;
+			}
+			if (has_back) {
+				const Room *b = back_at(f, (r.x0 + r.x1) / 2);
+				if (!(b && b->open)) {
+					continue; // its back wall is an inner wall now
+				}
+			}
+			place_window(r);
+		}
+		for (const Room &r : backs) {
+			if (r.floor == f && r.window && !r.open && r.x1 - r.x0 >= V(2.0)) {
+				place_window(r);
+			}
 		}
 
 		// ------------------------------------------------------------ ceiling lamps
@@ -202,11 +282,41 @@ void CutawayBuilding::configure(const Dictionary &def) {
 				continue;
 			}
 			int cx = (r.x0 + r.x1) / 2;
-			int cz = Ds / 2;
+			int cz = has_back ? Bz + (Ds - Bz) / 2 : Ds / 2;
 			uint32_t lamp = glow_night(pack_color(r.light.lerp(Color(1, 1, 1), 0.4f)));
 			for (int x = cx - 2; x < cx + 2; ++x) {
 				for (int z = cz - 1; z < cz + 1; ++z) {
 					g.set(x, yb + FH - 1, z, lamp);
+				}
+			}
+		}
+
+		for (const Room &r : backs) {
+			if (r.floor != f || !r.has_light || r.open) {
+				continue;
+			}
+			int cx = (r.x0 + r.x1) / 2;
+			int cz = Bz / 2 + 1;
+			uint32_t lamp = glow_night(pack_color(r.light.lerp(Color(1, 1, 1), 0.4f)));
+			for (int x = cx - 2; x < cx + 2; ++x) {
+				for (int z = cz - 1; z < cz + 1; ++z) {
+					g.set(x, yb + FH - 1, z, lamp);
+				}
+			}
+		}
+		// Dividers inside the back layer.
+		for (const Room &r : backs) {
+			if (r.floor != f || !r.divider) {
+				continue;
+			}
+			uint32_t c = shade(r.wall, 0.85f);
+			int dz0 = Bz / 2 - V(0.5), dz1 = Bz / 2 + V(0.5), top = yb + 2 + V(2.15);
+			for (int y = yb + 2; y < yb + FH; ++y) {
+				for (int z = 2; z < Bz; ++z) {
+					bool hole = r.divider_door && y < top && z >= dz0 && z < dz1;
+					bool frame = r.divider_door && y <= top && (z == dz0 - 1 || z == dz1 || y == top);
+					g.set(r.x0 - 1, y, z, hole ? 0u : (frame ? white : c));
+					g.set(r.x0, y, z, hole ? 0u : (frame ? white : c));
 				}
 			}
 		}
@@ -230,11 +340,12 @@ void CutawayBuilding::configure(const Dictionary &def) {
 		int f = int(p.get("floor", 0));
 		int px = V(double(p.get("x", x0_)) - x0_);
 		bool door = bool(p.get("door", true));
+		const int pz0 = (has_back && bool(p.get("front_only", false))) ? Bz : 0;
 		const Room *r = room_at(f, px - 2);
 		uint32_t c = shade(r ? r->wall : outer, 0.85f);
 		int yb = f * FH;
 		for (int y = yb + 2; y < yb + FH; ++y) {
-			for (int z = 0; z < Ds; ++z) {
+			for (int z = pz0; z < Ds; ++z) {
 				if (door && y < yb + 2 + V(2.15) && z >= door_z0 && z < door_z1) {
 					continue;
 				}
@@ -379,6 +490,24 @@ void CutawayBuilding::configure(const Dictionary &def) {
 		l->set_param(Light3D::PARAM_ATTENUATION, 1.2f);
 		l->set_param(Light3D::PARAM_SIZE, 0.25f);
 		l->set_param(Light3D::PARAM_VOLUMETRIC_FOG_ENERGY, 0.6f);
+		l->set_param(Light3D::PARAM_ENERGY, 0.0f);
+		l->set_shadow(true);
+		l->set_visible(false);
+		lights_.push_back(l);
+	}
+	for (const Room &r : backs) {
+		if (!r.has_light || r.open) {
+			continue;
+		}
+		OmniLight3D *l = memnew(OmniLight3D);
+		add_child(l);
+		float cx = float(x0_) + float(r.x0 + r.x1) * 0.5f * kVs;
+		l->set_position(Vector3(cx, float(r.floor * floor_h + floor_h - 0.35), float(z0) + float(Bz) * kVs * 0.5f));
+		l->set_color(r.light);
+		l->set_param(Light3D::PARAM_RANGE, std::max(3.5f, float(r.x1 - r.x0) * kVs * 0.7f));
+		l->set_param(Light3D::PARAM_ATTENUATION, 1.3f);
+		l->set_param(Light3D::PARAM_SIZE, 0.2f);
+		l->set_param(Light3D::PARAM_VOLUMETRIC_FOG_ENERGY, 0.4f);
 		l->set_param(Light3D::PARAM_ENERGY, 0.0f);
 		l->set_shadow(true);
 		l->set_visible(false);

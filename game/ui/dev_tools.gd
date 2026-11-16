@@ -80,6 +80,10 @@ func _run(cmd: String) -> void:
 		"nolimit":
 			Session.set_fps_index(2)
 			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		"cam":
+			player.indoor_distance = float(p[1])
+			if p.size() > 2:
+				player.indoor_pitch = float(p[2])
 		"delay":
 			wait_left = float(p[1])
 		"shot":

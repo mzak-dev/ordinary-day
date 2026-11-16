@@ -44,6 +44,12 @@ void PlayerController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sim_path"), "set_sim_path", "get_sim_path");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "world_path"), "set_world_path", "get_world_path");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "camera_path"), "set_camera_path", "get_camera_path");
+	ClassDB::bind_method(D_METHOD("set_indoor_distance", "d"), &PlayerController::set_indoor_distance);
+	ClassDB::bind_method(D_METHOD("get_indoor_distance"), &PlayerController::get_indoor_distance);
+	ClassDB::bind_method(D_METHOD("set_indoor_pitch", "p"), &PlayerController::set_indoor_pitch);
+	ClassDB::bind_method(D_METHOD("get_indoor_pitch"), &PlayerController::get_indoor_pitch);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "indoor_distance"), "set_indoor_distance", "get_indoor_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "indoor_pitch"), "set_indoor_pitch", "get_indoor_pitch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_enabled"), "set_input_enabled", "get_input_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "busy"), "set_busy", "get_busy");
@@ -372,17 +378,23 @@ void PlayerController::_process(double delta) {
 	sprite_->set_modulate(Color(1, 1, 1, alpha_));
 
 	if (camera_) {
-		Vector3 focus(vpos_.x, vpos_.y + 1.6f, -1.0f);
+		// Indoors the camera moves in to roughly one storey, like the old
+		// 192x108 hand-drawn frames; outside it pulls back to show the block.
+		const bool indoor = vpos_.z < 0.0f;
+		const float target_in = indoor ? 1.0f : 0.0f;
+		Vector3 focus(vpos_.x, vpos_.y + (indoor ? 1.45f : 1.6f), indoor ? -2.0f : -1.0f);
 		if (!cam_init_ || focus.distance_to(cam_focus_) > 30.0f) {
 			cam_focus_ = focus;
+			cam_in_ = target_in;
 			cam_init_ = true;
 		}
 		float k = 1.0f - std::exp(-float(delta) * 4.0f);
 		cam_focus_ = cam_focus_.lerp(focus, k);
-		// Close perspective camera looking slightly down: rooms read as real
-		// boxes with converging side walls, floors and ceilings.
-		const float dist = 19.5f;
-		const float pitch = 0.17f;
+		cam_in_ += (target_in - cam_in_) * (1.0f - std::exp(-float(delta) * 2.5f));
+		// Perspective camera looking slightly down: rooms read as real boxes
+		// with converging side walls, floors and ceilings.
+		const float dist = 19.5f + (indoor_distance_ - 19.5f) * cam_in_;
+		const float pitch = 0.17f + (indoor_pitch_ - 0.17f) * cam_in_;
 		camera_->set_position(cam_focus_ + Vector3(0.0f, dist * std::sin(pitch), dist * std::cos(pitch)));
 		camera_->set_rotation(Vector3(-pitch, 0.0f, 0.0f));
 	}
