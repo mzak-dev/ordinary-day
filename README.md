@@ -66,7 +66,7 @@ Woksele mają 1/8 m (budynki) i 1/16 m (meble), z szumem koloru na każdym wokse
 
 Na oświetlenie składają się SDFGI i SSIL, mgła wolumetryczna ograniczona do `FogVolume` wokół budynków (smugi światła przez okna), światła pokojów i latarń z cieniami, bloom, SSR na mokrych kałużach, głębia ostrości tła, ziarno, winieta i lekka aberracja.
 
-Kamera jest perspektywiczna z wąskim kątem (14°). Wygląda prawie jak rzut ortogonalny, ale obsługuje mgłę wolumetryczną i głębię ostrości.
+Kamera jest perspektywiczna (34°, ok. 20 m od sceny, lekko z góry), więc pokoje mają widoczne podłogi, sufity i zbiegające się ściany boczne. Tło ma trzy warstwy: bloki z wielkiej płyty z balkonami i kolorowymi pasami, wieżowce z kominem elektrociepłowni i wieżą kościoła oraz linię drzew. Niebo rysuje własny shader (`sky.gdshader`): gradient, słońce, chmury i gwiazdy.
 
 ## Testy wizualne
 

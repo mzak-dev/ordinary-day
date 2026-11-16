@@ -365,15 +365,17 @@ void PlayerController::_process(double delta) {
 	sprite_->set_modulate(Color(1, 1, 1, alpha_));
 
 	if (camera_) {
-		Vector3 focus(vpos_.x, vpos_.y + 1.4f, 0.0f);
+		Vector3 focus(vpos_.x, vpos_.y + 1.6f, -1.0f);
 		if (!cam_init_ || focus.distance_to(cam_focus_) > 30.0f) {
 			cam_focus_ = focus;
 			cam_init_ = true;
 		}
 		float k = 1.0f - std::exp(-float(delta) * 4.0f);
 		cam_focus_ = cam_focus_.lerp(focus, k);
-		const float dist = 52.0f;
-		const float pitch = 0.11f;
+		// Close perspective camera looking slightly down: rooms read as real
+		// boxes with converging side walls, floors and ceilings.
+		const float dist = 19.5f;
+		const float pitch = 0.17f;
 		camera_->set_position(cam_focus_ + Vector3(0.0f, dist * std::sin(pitch), dist * std::cos(pitch)));
 		camera_->set_rotation(Vector3(-pitch, 0.0f, 0.0f));
 	}

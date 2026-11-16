@@ -4,6 +4,8 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/plane_mesh.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
@@ -24,6 +26,10 @@ uint32_t hash_u32(uint32_t x) {
 
 float hash01(int a, int b = 0) {
 	return float(hash_u32(uint32_t(a) * 73856093u ^ uint32_t(b) * 19349663u) & 0xFFFF) / 65535.0f;
+}
+
+bool tower_window(int lx, int y) {
+	return lx % 4 == 1 && y % 6 >= 2 && y % 6 < 4;
 }
 
 float smooth(float e0, float e1, float x) {
@@ -126,7 +132,7 @@ Ref<ArrayMesh> WorldDirector::prop_mesh(const String &name) {
 
 void WorldDirector::build_terrain() {
 	const float vs = 0.25f;
-	const float zmin = -9.0f, zmax = 26.0f;
+	const float zmin = -36.0f, zmax = 26.0f;
 	Array streets = world_.get("streets", Array());
 	Array buildings = world_.get("buildings", Array());
 	Array areas = world_.get("areas", Array());
@@ -177,7 +183,7 @@ void WorldDirector::build_terrain() {
 				auto lawn = [&]() {
 					return n < 0.08f ? dirt : grass[int(n * 37.0f) % 3];
 				};
-				if (z < -3.5f) {
+				if (z < -5.0f) {
 					c = lawn();
 				} else if (z < 0.0f) {
 					c = built ? paving : lawn();
@@ -217,46 +223,191 @@ void WorldDirector::build_terrain() {
 			}
 		}
 		mesh_node(this, build_voxel_mesh(g, vs, Vector3(x0, -2 * vs, zmin), 0.05f), true);
+
+		// Distant fields under the far skyline layers.
+		Ref<PlaneMesh> plane;
+		plane.instantiate();
+		plane->set_size(Vector2(x1 - x0 + 600.0f, 260.0f));
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
+		mat->set_albedo(Color::html("#4a6438"));
+		mat->set_roughness(1.0f);
+		plane->set_material(mat);
+		MeshInstance3D *far = memnew(MeshInstance3D);
+		add_child(far);
+		far->set_mesh(plane);
+		far->set_position(Vector3((x0 + x1) * 0.5f, -0.3f, zmin - 128.0f));
+		far->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 	}
 }
 
 void WorldDirector::build_skyline() {
-	const float vs = 0.5f;
 	Array streets = world_.get("streets", Array());
-	const uint32_t lit = glow_night(parse_hex_color("#b9a47c"));
-	const uint32_t dark = parse_hex_color("#4c5664");
+	const uint32_t lit = glow_night(parse_hex_color("#e8c98c"));
+	const uint32_t glass = parse_hex_color("#3d4a57");
+	const uint32_t panels[6] = { parse_hex_color("#d8d2c4"), parse_hex_color("#c9ccc6"), parse_hex_color("#e3d7b5"),
+		parse_hex_color("#cfd8de"), parse_hex_color("#d9c6bd"), parse_hex_color("#bfc5bd") };
+	const uint32_t stripes[5] = { parse_hex_color("#e07a4f"), parse_hex_color("#5b8fb9"), parse_hex_color("#e7b94b"),
+		parse_hex_color("#7aa66b"), parse_hex_color("#b85c6e") };
+
 	for (int64_t si = 0; si < streets.size(); ++si) {
 		Dictionary st = streets[si];
-		int x0 = int(double(st.get("x0", 0))) - 40;
-		int x1 = int(double(st.get("x1", 0))) + 40;
-		const int W = int((x1 - x0) / vs);
-		VoxelGrid g;
-		g.resize(W, 70, 8);
-		int x = 0;
-		int k = int(si) * 97;
-		while (x < W) {
-			int w = 12 + int(hash01(k, 1) * 22);
-			int h = 18 + int(hash01(k, 2) * 46);
-			int depth_off = int(hash01(k, 3) * 4);
-			float tone = 0.75f + 0.25f * hash01(k, 4);
-			uint32_t base = shade(parse_hex_color("#8d939b"), tone);
-			for (int bx = x; bx < std::min(x + w, W); ++bx) {
-				for (int y = 0; y < h; ++y) {
-					for (int z = depth_off; z < 8; ++z) {
-						uint32_t c = base;
-						bool window = z == 7 && (bx - x) % 3 == 1 && y % 4 == 2 && y < h - 2 && bx < x + w - 1;
-						if (window) {
-							c = hash01(bx * 31 + k, y) < 0.3f ? lit : dark;
+		const int sx0 = int(double(st.get("x0", 0))) - 70;
+		const int sx1 = int(double(st.get("x1", 0))) + 70;
+
+		// ---- near layer: blocks of flats (wielka płyta) with balconies -------------
+		{
+			const float vs = 0.25f;
+			const int W = int((sx1 - sx0) / vs);
+			VoxelGrid g;
+			g.resize(W, 136, 28);
+			int k = int(si) * 131;
+			int x = int(hash01(k, 7) * 20);
+			while (x < W) {
+				const int floors = 4 + int(hash01(k, 1) * 7);
+				const int fh = 12; // 3 m
+				const int h = floors * fh + 2;
+				const int w = 72 + int(hash01(k, 2) * 72);
+				const int back = int(hash01(k, 3) * 6);
+				const uint32_t base = panels[int(hash01(k, 4) * 6) % 6];
+				const uint32_t stripe = stripes[int(hash01(k, 5) * 5) % 5];
+				const int stripe_x = int(hash01(k, 6) * 4) * 12 + 6;
+				for (int bx = x; bx < std::min(x + w, W); ++bx) {
+					int lx = bx - x;
+					for (int y = 0; y < h && y < g.sy; ++y) {
+						int ly = y % fh;
+						int fl = y / fh;
+						for (int z = back; z < 24; ++z) {
+							g.set(bx, y, z, y < 2 ? shade(base, 0.7f) : base);
 						}
-						g.set(bx, y, z, c);
+						uint32_t c = base;
+						bool col_band = (lx / 12) % 2 == 0;
+						if (lx >= stripe_x && lx < stripe_x + 8) {
+							c = stripe;
+						}
+						if (ly == 0) {
+							c = shade(base, 0.85f); // panel joint
+						}
+						bool win = (lx % 12) >= 3 && (lx % 12) < 9 && ly >= 4 && ly < 9 && y > 3 && y < h - 2 && lx > 2 && lx < w - 3;
+						if (win) {
+							c = hash01(bx / 12 + k * 7, fl) < 0.33f ? lit : glass;
+						}
+						g.set(bx, y, 23, c);
+						// Balconies on every other window column.
+						if (col_band && fl > 0 && y < h - 2 && lx > 2 && lx < w - 3) {
+							if (ly == 1 && (lx % 12) >= 2 && (lx % 12) < 10) {
+								g.set(bx, y, 24, shade(base, 0.8f));
+								g.set(bx, y, 25, shade(base, 0.8f));
+							}
+							if (ly >= 2 && ly < 5 && (lx % 12) >= 2 && (lx % 12) < 10) {
+								g.set(bx, y, 25, ((lx % 12) == 2 || (lx % 12) == 9 || ly == 4) ? stripe : shade(stripe, 0.75f));
+							}
+						}
+					}
+					if (h + 4 < g.sy) {
+						// roof clutter: stairwell boxes and antennas
+						if (lx % 40 >= 30 && lx % 40 < 38) {
+							for (int y = h; y < h + 6; ++y) {
+								for (int z = back + 4; z < back + 12; ++z) {
+									g.set(bx, y, z, shade(base, 0.9f));
+								}
+							}
+						}
+						if (lx % 53 == 17) {
+							for (int y = h; y < std::min(g.sy, h + 14); ++y) {
+								g.set(bx, y, back + 8, parse_hex_color("#6b6b6b"));
+							}
+						}
+					}
+				}
+				x += w + 12 + int(hash01(k, 8) * 40);
+				++k;
+			}
+			MeshInstance3D *mi = mesh_node(this, build_voxel_mesh(g, vs, Vector3(float(sx0), -0.25f, -30.0f), 0.05f));
+			mi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+		}
+
+		// ---- middle layer: towers, a heat-plant chimney, a church spire ------------
+		{
+			const float vs = 0.5f;
+			const int W = int((sx1 - sx0 + 80) / vs);
+			VoxelGrid g;
+			g.resize(W, 190, 10);
+			int k = int(si) * 977;
+			int x = 0;
+			while (x < W) {
+				float r = hash01(k, 1);
+				int w = 16 + int(hash01(k, 2) * 30);
+				int h = 30 + int(hash01(k, 3) * 70);
+				uint32_t base = shade(parse_hex_color("#9aa0a8"), 0.8f + 0.25f * hash01(k, 4));
+				if (r < 0.12f) {
+					// chimney with red/white bands
+					w = 6;
+					h = 150 + int(hash01(k, 5) * 30);
+					for (int bx = x; bx < std::min(W, x + w); ++bx) {
+						for (int y = 0; y < h && y < g.sy; ++y) {
+							uint32_t c = ((y / 14) % 2 && y > h - 70) ? parse_hex_color("#c0392b") : parse_hex_color("#e8e4dc");
+							if (y >= h - 2) {
+								c = glow_night(parse_hex_color("#ff3b30"));
+							}
+							for (int z = 2; z < 8; ++z) {
+								g.set(bx, y, z, c);
+							}
+						}
+					}
+				} else if (r < 0.2f) {
+					// church tower with a spire
+					w = 12;
+					int body = 60;
+					for (int bx = x; bx < std::min(W, x + w); ++bx) {
+						int dx = std::abs(bx - x - w / 2);
+						for (int y = 0; y < body + 40 && y < g.sy; ++y) {
+							bool spire = y >= body && dx <= (body + 40 - y) / 7;
+							if (y < body || spire) {
+								for (int z = 2; z < 9; ++z) {
+									g.set(bx, y, z, y < body ? parse_hex_color("#a0705a") : parse_hex_color("#4f7a6a"));
+								}
+							}
+						}
+					}
+				} else {
+					for (int bx = x; bx < std::min(W, x + w); ++bx) {
+						for (int y = 0; y < h && y < g.sy; ++y) {
+							for (int z = 0; z < 10; ++z) {
+								g.set(bx, y, z, base);
+							}
+							bool win = tower_window(bx - x, y);
+							if (win && y < h - 2) {
+								g.set(bx, y, 9, hash01(bx * 13 + k, y / 3) < 0.25f ? lit : shade(base, 0.7f));
+							}
+						}
+					}
+				}
+				x += w + 4 + int(hash01(k, 6) * 24);
+				++k;
+			}
+			MeshInstance3D *mi = mesh_node(this, build_voxel_mesh(g, vs, Vector3(float(sx0 - 40), -0.5f, -70.0f), 0.03f));
+			mi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+		}
+
+		// ---- far layer: tree line on gentle hills -------------------------------
+		{
+			const float vs = 1.0f;
+			const int W = sx1 - sx0 + 200;
+			VoxelGrid g;
+			g.resize(W, 40, 6);
+			for (int bx = 0; bx < W; ++bx) {
+				float hill = 6.0f + 6.0f * std::sin(float(bx) * 0.021f + float(si)) + 3.0f * std::sin(float(bx) * 0.07f);
+				int h = int(hill + hash01(bx, int(si)) * 3.0f);
+				for (int y = 0; y < h; ++y) {
+					for (int z = 0; z < 6; ++z) {
+						g.set(bx, y, z, shade(parse_hex_color("#3f5a40"), 0.85f + 0.2f * hash01(bx * 5 + y, z)));
 					}
 				}
 			}
-			x += w + 2 + int(hash01(k, 5) * 8);
-			++k;
+			MeshInstance3D *mi = mesh_node(this, build_voxel_mesh(g, vs, Vector3(float(sx0 - 100), -1.0f, -150.0f), 0.04f));
+			mi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 		}
-		MeshInstance3D *mi = mesh_node(this, build_voxel_mesh(g, vs, Vector3(float(x0), -0.5f, -22.0f), 0.03f));
-		mi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 	}
 }
 

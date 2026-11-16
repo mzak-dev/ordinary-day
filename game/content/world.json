@@ -43,9 +43,9 @@
 
 	"links": [
 		{ "id": "block_door", "anim": "door", "door": { "x": 5.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#5d4037", "glass": true }, "a": { "seg": "street", "x": 6.0, "key": "up", "label": "Wejdź do bloku" }, "b": { "seg": "b0", "x": 7.0, "key": "down", "label": "Wyjdź na osiedle" } },
-		{ "id": "stairs01", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -1.95 }, "a": { "seg": "b0", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b1s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
-		{ "id": "stairs12", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -1.95 }, "a": { "seg": "b1s", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b2s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
-		{ "id": "stairs23", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -1.95 }, "a": { "seg": "b2s", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b3s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
+		{ "id": "stairs01", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -3.35 }, "a": { "seg": "b0", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b1s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
+		{ "id": "stairs12", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -3.35 }, "a": { "seg": "b1s", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b2s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
+		{ "id": "stairs23", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -3.35 }, "a": { "seg": "b2s", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b3s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
 		{
 			"id": "halina_door", "anim": "door", "door": { "x": 4.0, "y": 3.25, "z": -0.8, "facing": "side", "color": "#8d6e63", "swing": 1 }, "requires_from": "a",
 			"a": { "seg": "b1s", "x": 3.2, "key": "up", "label": "Zapukaj do pani Haliny" },
@@ -86,7 +86,7 @@
 			"text": { "cold": "Autobus. Czoło przy szybie. Miasto przesuwa się jak tapeta.", "warm": "Autobus. Ktoś obok śmieje się do telefonu i łapiesz się na tym, że też się uśmiechasz." }
 		},
 		{ "id": "uni_door", "anim": "door", "door": { "x": 212.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#5d4037", "glass": true }, "a": { "seg": "uni_street", "x": 213.0, "key": "up", "label": "Wejdź na wydział" }, "b": { "seg": "uni0", "x": 214.2, "key": "down", "label": "Wyjdź" } },
-		{ "id": "uni_stairs", "anim": "stairs", "stairs": { "low_x": 212.8, "high_x": 210.6, "z": -1.95 }, "a": { "seg": "uni0", "x": 211.5, "key": "up", "label": "Schody do biblioteki" }, "b": { "seg": "uni1", "x": 211.5, "key": "down", "label": "Schody w dół" } },
+		{ "id": "uni_stairs", "anim": "stairs", "stairs": { "low_x": 212.8, "high_x": 210.6, "z": -3.35 }, "a": { "seg": "uni0", "x": 211.5, "key": "up", "label": "Schody do biblioteki" }, "b": { "seg": "uni1", "x": 211.5, "key": "down", "label": "Schody w dół" } },
 		{ "id": "cafe_door", "anim": "door", "door": { "x": 240.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#4e342e", "glass": true }, "a": { "seg": "uni_street", "x": 241.0, "key": "up", "label": "Wejdź do kawiarni" }, "b": { "seg": "cafe", "x": 242.2, "key": "down", "label": "Wyjdź" } }
 	],
 
@@ -97,7 +97,7 @@
 
 	"buildings": [
 		{
-			"id": "blok", "x0": 0, "x1": 18, "floors": 4, "floor_h": 3.0, "z0": -3.5, "z1": 0.0,
+			"id": "blok", "x0": 0, "x1": 18, "floors": 4, "floor_h": 3.0, "z0": -5.0, "z1": 0.0,
 			"open": "always", "roof_details": true, "stair_hole": { "x0": 0.25, "x1": 2.9 }, "wall": "#b8b0a0", "facade": "#d4ccb8", "accent": "#7d9bb0",
 			"doors": [ 6.0 ],
 			"partitions": [ { "floor": 0, "x": 8, "door": false }, { "floor": 1, "x": 4 }, { "floor": 2, "x": 4 }, { "floor": 2, "x": 11 }, { "floor": 3, "x": 4 } ],
@@ -114,19 +114,19 @@
 			]
 		},
 		{
-			"id": "zabka", "x0": 24, "x1": 32, "floors": 1, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"id": "zabka", "x0": 24, "x1": 32, "floors": 1, "floor_h": 3.5, "z0": -5.0, "z1": 0.0,
 			"open": "shop", "wall": "#e8e4da", "facade": "#2e7d32", "accent": "#a5d6a7",
 			"sign": "ŻABKA", "sign_color": "#7cb342", "doors": [ 27.0 ],
 			"rooms": [ { "floor": 0, "x0": 24, "x1": 32, "wall": "#f2f2ee", "floor_col": "#c8c8c0", "floor_kind": "tiles", "light": "#f0fff0" } ]
 		},
 		{
-			"id": "silownia", "x0": 36, "x1": 50, "floors": 1, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"id": "silownia", "x0": 36, "x1": 50, "floors": 1, "floor_h": 3.5, "z0": -5.0, "z1": 0.0,
 			"open": "gym", "wall": "#6d7378", "facade": "#37474f", "accent": "#ff7043",
 			"sign": "FITBLOK", "sign_color": "#ff7043", "doors": [ 39.0 ],
 			"rooms": [ { "floor": 0, "x0": 36, "x1": 50, "wall": "#9ea3a6", "low": "#2f3438", "floor_col": "#3a3a3a", "floor_kind": "plain", "light": "#e0f0ff" } ]
 		},
 		{
-			"id": "wydzial", "x0": 210, "x1": 230, "floors": 2, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"id": "wydzial", "x0": 210, "x1": 230, "floors": 2, "floor_h": 3.5, "z0": -5.0, "z1": 0.0,
 			"open": "uni", "stair_hole": { "x0": 210.25, "x1": 213.0 }, "wall": "#8d7f74", "facade": "#a1887f", "accent": "#d7ccc8",
 			"sign": "WYDZIAŁ INFORMATYKI", "sign_color": "#eeeeee", "doors": [ 213.0 ],
 			"rooms": [
@@ -135,7 +135,7 @@
 			]
 		},
 		{
-			"id": "ziarno", "x0": 238, "x1": 250, "floors": 1, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"id": "ziarno", "x0": 238, "x1": 250, "floors": 1, "floor_h": 3.5, "z0": -5.0, "z1": 0.0,
 			"open": "cafe", "wall": "#6d4c41", "facade": "#5d4037", "accent": "#ffcc80",
 			"sign": "ZIARNO", "sign_color": "#ffcc80", "doors": [ 241.0 ],
 			"rooms": [ { "floor": 0, "x0": 238, "x1": 250, "wall": "#efd9b4", "low": "#8d6e63", "floor_col": "#8d6e63", "light": "#ffcf8a" } ]
@@ -143,67 +143,67 @@
 	],
 
 	"props": [
-		{ "vox": "stairs", "x": 1.6, "y": 0.25, "z": -2.6 },
-		{ "vox": "stairs", "x": 1.6, "y": 3.25, "z": -2.6 },
-		{ "vox": "stairs", "x": 1.6, "y": 6.25, "z": -2.6 },
-		{ "vox": "mailboxes", "x": 6.9, "y": 0.25, "z": -3.2 },
-		{ "vox": "bike", "x": 4.6, "y": 0.25, "z": -2.6 },
+		{ "vox": "stairs", "x": 1.6, "y": 0.25, "z": -4.0 },
+		{ "vox": "stairs", "x": 1.6, "y": 3.25, "z": -4.0 },
+		{ "vox": "stairs", "x": 1.6, "y": 6.25, "z": -4.0 },
+		{ "vox": "mailboxes", "x": 6.9, "y": 0.25, "z": -4.7 },
+		{ "vox": "bike", "x": 4.6, "y": 0.25, "z": -4.1 },
 
-		{ "vox": "armchair", "x": 9.0, "y": 3.25, "z": -2.6 },
-		{ "vox": "tv_old", "x": 6.4, "y": 3.25, "z": -2.9 },
-		{ "vox": "cabinet", "x": 13.5, "y": 3.25, "z": -3.0 },
-		{ "vox": "plant", "x": 16.6, "y": 3.25, "z": -2.8 },
-		{ "vox": "cat", "x": 11.2, "y": 3.25, "z": -2.0 },
+		{ "vox": "armchair", "x": 9.0, "y": 3.25, "z": -4.1 },
+		{ "vox": "tv_old", "x": 6.4, "y": 3.25, "z": -4.4 },
+		{ "vox": "cabinet", "x": 13.5, "y": 3.25, "z": -4.5 },
+		{ "vox": "plant", "x": 16.6, "y": 3.25, "z": -4.3 },
+		{ "vox": "cat", "x": 11.2, "y": 3.25, "z": -3.5 },
 
-		{ "vox": "fridge", "x": 5.0, "y": 6.25, "z": -2.9 },
-		{ "vox": "counter", "x": 6.4, "y": 6.25, "z": -3.0 },
-		{ "vox": "stove", "x": 7.6, "y": 6.25, "z": -3.0 },
-		{ "vox": "table", "x": 9.3, "y": 6.25, "z": -2.3 },
-		{ "vox": "chair", "x": 8.4, "y": 6.25, "z": -2.3 },
-		{ "vox": "chair", "x": 10.2, "y": 6.25, "z": -2.3 },
-		{ "vox": "desk_pc", "x": 12.4, "y": 6.25, "z": -2.9 },
-		{ "vox": "wardrobe", "x": 14.3, "y": 6.25, "z": -3.0 },
-		{ "vox": "bed", "x": 16.4, "y": 6.25, "z": -2.5 },
-		{ "vox": "poster", "x": 15.2, "y": 7.8, "z": -3.3 },
+		{ "vox": "fridge", "x": 5.0, "y": 6.25, "z": -4.4 },
+		{ "vox": "counter", "x": 6.4, "y": 6.25, "z": -4.5 },
+		{ "vox": "stove", "x": 7.6, "y": 6.25, "z": -4.5 },
+		{ "vox": "table", "x": 9.3, "y": 6.25, "z": -3.8 },
+		{ "vox": "chair", "x": 8.4, "y": 6.25, "z": -3.8 },
+		{ "vox": "chair", "x": 10.2, "y": 6.25, "z": -3.8 },
+		{ "vox": "desk_pc", "x": 12.4, "y": 6.25, "z": -4.4 },
+		{ "vox": "wardrobe", "x": 14.3, "y": 6.25, "z": -4.5 },
+		{ "vox": "bed", "x": 16.4, "y": 6.25, "z": -4 },
+		{ "vox": "poster", "x": 15.2, "y": 7.8, "z": -4.7 },
 
-		{ "vox": "sofa", "x": 10.5, "y": 9.25, "z": -2.7 },
-		{ "vox": "speaker", "x": 7.2, "y": 9.25, "z": -2.9 },
-		{ "vox": "bookshelf", "x": 14.0, "y": 9.25, "z": -3.0 },
-		{ "vox": "plant", "x": 16.8, "y": 9.25, "z": -2.8 },
-		{ "vox": "boxes", "x": 5.6, "y": 9.25, "z": -2.8 },
+		{ "vox": "sofa", "x": 10.5, "y": 9.25, "z": -4.2 },
+		{ "vox": "speaker", "x": 7.2, "y": 9.25, "z": -4.4 },
+		{ "vox": "bookshelf", "x": 14.0, "y": 9.25, "z": -4.5 },
+		{ "vox": "plant", "x": 16.8, "y": 9.25, "z": -4.3 },
+		{ "vox": "boxes", "x": 5.6, "y": 9.25, "z": -4.3 },
 
-		{ "vox": "shop_shelf", "x": 25.6, "y": 0.25, "z": -3.0 },
-		{ "vox": "shop_shelf", "x": 27.9, "y": 0.25, "z": -3.0 },
-		{ "vox": "drinks_fridge", "x": 29.4, "y": 0.25, "z": -3.0 },
-		{ "vox": "shop_counter", "x": 30.6, "y": 0.25, "z": -2.4 },
+		{ "vox": "shop_shelf", "x": 25.6, "y": 0.25, "z": -4.5 },
+		{ "vox": "shop_shelf", "x": 27.9, "y": 0.25, "z": -4.5 },
+		{ "vox": "drinks_fridge", "x": 29.4, "y": 0.25, "z": -4.5 },
+		{ "vox": "shop_counter", "x": 30.6, "y": 0.25, "z": -3.9 },
 
-		{ "vox": "treadmill", "x": 41.0, "y": 0.25, "z": -2.6 },
-		{ "vox": "treadmill", "x": 42.8, "y": 0.25, "z": -2.6 },
-		{ "vox": "bench_press", "x": 45.4, "y": 0.25, "z": -2.4 },
-		{ "vox": "weight_rack", "x": 48.0, "y": 0.25, "z": -3.0 },
+		{ "vox": "treadmill", "x": 41.0, "y": 0.25, "z": -4.1 },
+		{ "vox": "treadmill", "x": 42.8, "y": 0.25, "z": -4.1 },
+		{ "vox": "bench_press", "x": 45.4, "y": 0.25, "z": -3.9 },
+		{ "vox": "weight_rack", "x": 48.0, "y": 0.25, "z": -4.5 },
 
-		{ "vox": "stairs_tall", "x": 211.6, "y": 0.25, "z": -2.6 },
-		{ "vox": "board", "x": 225.6, "y": 1.2, "z": -3.3 },
-		{ "vox": "lecture_desk", "x": 216.5, "y": 0.25, "z": -2.3 },
-		{ "vox": "lecture_desk", "x": 219.5, "y": 0.25, "z": -2.3 },
-		{ "vox": "lecture_desk", "x": 225.5, "y": 0.25, "z": -2.3 },
-		{ "vox": "lecture_desk", "x": 228.0, "y": 0.25, "z": -2.3 },
-		{ "vox": "vending", "x": 214.8, "y": 0.25, "z": -3.0 },
-		{ "vox": "bookshelf", "x": 214.0, "y": 3.75, "z": -3.0 },
-		{ "vox": "bookshelf", "x": 216.0, "y": 3.75, "z": -3.0 },
-		{ "vox": "bookshelf", "x": 226.5, "y": 3.75, "z": -3.0 },
-		{ "vox": "bookshelf", "x": 228.5, "y": 3.75, "z": -3.0 },
-		{ "vox": "table", "x": 221.0, "y": 3.75, "z": -2.3 },
-		{ "vox": "chair", "x": 220.0, "y": 3.75, "z": -2.3 },
-		{ "vox": "chair", "x": 222.0, "y": 3.75, "z": -2.3 },
+		{ "vox": "stairs_tall", "x": 211.6, "y": 0.25, "z": -4.0 },
+		{ "vox": "board", "x": 225.6, "y": 1.2, "z": -4.7 },
+		{ "vox": "lecture_desk", "x": 216.5, "y": 0.25, "z": -3.8 },
+		{ "vox": "lecture_desk", "x": 219.5, "y": 0.25, "z": -3.8 },
+		{ "vox": "lecture_desk", "x": 225.5, "y": 0.25, "z": -3.8 },
+		{ "vox": "lecture_desk", "x": 228.0, "y": 0.25, "z": -3.8 },
+		{ "vox": "vending", "x": 214.8, "y": 0.25, "z": -4.5 },
+		{ "vox": "bookshelf", "x": 214.0, "y": 3.75, "z": -4.5 },
+		{ "vox": "bookshelf", "x": 216.0, "y": 3.75, "z": -4.5 },
+		{ "vox": "bookshelf", "x": 226.5, "y": 3.75, "z": -4.5 },
+		{ "vox": "bookshelf", "x": 228.5, "y": 3.75, "z": -4.5 },
+		{ "vox": "table", "x": 221.0, "y": 3.75, "z": -3.8 },
+		{ "vox": "chair", "x": 220.0, "y": 3.75, "z": -3.8 },
+		{ "vox": "chair", "x": 222.0, "y": 3.75, "z": -3.8 },
 
-		{ "vox": "cafe_counter", "x": 247.2, "y": 0.25, "z": -2.6 },
-		{ "vox": "coffee_machine", "x": 248.6, "y": 1.35, "z": -2.9 },
-		{ "vox": "table", "x": 243.0, "y": 0.25, "z": -2.3 },
-		{ "vox": "chair", "x": 242.1, "y": 0.25, "z": -2.3 },
-		{ "vox": "plant", "x": 239.2, "y": 0.25, "z": -2.9 },
+		{ "vox": "cafe_counter", "x": 247.2, "y": 0.25, "z": -4.1 },
+		{ "vox": "coffee_machine", "x": 248.6, "y": 1.35, "z": -4.4 },
+		{ "vox": "table", "x": 243.0, "y": 0.25, "z": -3.8 },
+		{ "vox": "chair", "x": 242.1, "y": 0.25, "z": -3.8 },
+		{ "vox": "plant", "x": 239.2, "y": 0.25, "z": -4.4 },
 
-		{ "vox": "tree", "x": -19.0, "y": 0.0, "z": -2.0 },
+		{ "vox": "tree", "x": -19.0, "y": 0.0, "z": -3.5 },
 		{ "vox": "tree", "x": -9.0, "y": 0.0, "z": -1.5 },
 		{ "vox": "lamp", "x": -4.0, "y": 0.0, "z": 0.5 },
 		{ "vox": "bench", "x": -12.0, "y": 0.0, "z": 0.4 },
@@ -212,15 +212,15 @@
 		{ "vox": "lamp", "x": 33.5, "y": 0.0, "z": 0.5 },
 		{ "vox": "tree", "x": 52.0, "y": 0.0, "z": -1.8 },
 		{ "vox": "bus_shelter", "x": 57.0, "y": 0.0, "z": -0.3 },
-		{ "vox": "tree", "x": 65.0, "y": 0.0, "z": -2.2 },
-		{ "vox": "tree", "x": 69.5, "y": 0.0, "z": -4.0 },
+		{ "vox": "tree", "x": 65.0, "y": 0.0, "z": -3.7 },
+		{ "vox": "tree", "x": 69.5, "y": 0.0, "z": -5.5 },
 		{ "vox": "bench", "x": 71.0, "y": 0.0, "z": 0.4 },
 		{ "vox": "lamp", "x": 74.0, "y": 0.0, "z": 0.5 },
 		{ "vox": "tree", "x": 77.0, "y": 0.0, "z": -1.6 },
 		{ "vox": "bench", "x": 81.0, "y": 0.0, "z": 0.4 },
-		{ "vox": "tree", "x": 84.0, "y": 0.0, "z": -3.5 },
+		{ "vox": "tree", "x": 84.0, "y": 0.0, "z": -5 },
 		{ "vox": "tree", "x": 89.0, "y": 0.0, "z": -1.8 },
-		{ "vox": "tree", "x": 93.5, "y": 0.0, "z": -3.0 },
+		{ "vox": "tree", "x": 93.5, "y": 0.0, "z": -4.5 },
 
 		{ "vox": "bus_shelter", "x": 205.0, "y": 0.0, "z": -0.3 },
 		{ "vox": "tree", "x": 199.0, "y": 0.0, "z": -1.8 },
@@ -228,6 +228,6 @@
 		{ "vox": "tree", "x": 234.0, "y": 0.0, "z": -1.8 },
 		{ "vox": "bench", "x": 235.0, "y": 0.0, "z": 0.4 },
 		{ "vox": "lamp", "x": 252.0, "y": 0.0, "z": 0.5 },
-		{ "vox": "tree", "x": 256.0, "y": 0.0, "z": -2.0 }
+		{ "vox": "tree", "x": 256.0, "y": 0.0, "z": -3.5 }
 	]
 }

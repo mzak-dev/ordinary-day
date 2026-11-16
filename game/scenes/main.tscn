@@ -1,11 +1,20 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://ui/hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://ui/dev_tools.gd" id="2_dev"]
 [ext_resource type="Shader" path="res://shaders/post.gdshader" id="3_post"]
+[ext_resource type="Shader" path="res://shaders/sky.gdshader" id="4_sky"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("4_sky")
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ShaderMaterial_sky")
+radiance_size = 1
 
 [sub_resource type="Environment" id="Environment_main"]
-background_mode = 1
+background_mode = 2
+sky = SubResource("Sky_main")
 background_color = Color(0.6, 0.75, 0.9, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.7, 0.72, 0.78, 1)
@@ -40,11 +49,11 @@ glow_hdr_threshold = 0.9
 fog_enabled = true
 fog_mode = 1
 fog_light_color = Color(0.6, 0.75, 0.9, 1)
-fog_density = 0.5
+fog_density = 0.85
 fog_sky_affect = 0.0
-fog_depth_curve = 1.4
-fog_depth_begin = 66.0
-fog_depth_end = 95.0
+fog_depth_curve = 1.7
+fog_depth_begin = 30.0
+fog_depth_end = 175.0
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.008
 volumetric_fog_albedo = Color(0.9, 0.88, 0.85, 1)
@@ -56,9 +65,9 @@ adjustment_enabled = true
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributes_main"]
 dof_blur_far_enabled = true
-dof_blur_far_distance = 61.0
-dof_blur_far_transition = 18.0
-dof_blur_amount = 0.07
+dof_blur_far_distance = 27.0
+dof_blur_far_transition = 30.0
+dof_blur_amount = 0.06
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_post"]
 shader = ExtResource("3_post")
@@ -76,9 +85,9 @@ shader = ExtResource("3_post")
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.994, 0.11, 0, -0.11, 0.994, 6, 7, 52)
 attributes = SubResource("CameraAttributes_main")
-fov = 14.0
-near = 5.0
-far = 400.0
+fov = 34.0
+near = 0.5
+far = 600.0
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.82, -0.33, 0.47, 0, 0.82, 0.57, -0.57, -0.47, 0.67, 0, 20, 0)
@@ -87,7 +96,7 @@ light_volumetric_fog_energy = 1.6
 shadow_enabled = true
 shadow_blur = 1.4
 directional_shadow_mode = 2
-directional_shadow_max_distance = 90.0
+directional_shadow_max_distance = 60.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")

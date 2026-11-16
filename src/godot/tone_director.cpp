@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/quad_mesh.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
+#include <godot_cpp/classes/sky.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
@@ -206,7 +208,20 @@ void ToneDirector::_process(double delta) {
 			Color grey(0.55f, 0.57f, 0.6f);
 			Color sky = k.sky.lerp(grey * k.sky.get_luminance() * 1.8f, rain_amount_ * 0.7f) * tint;
 			e->set_bg_color(sky);
-			e->set_fog_light_color(sky);
+			e->set_fog_light_color(sky.lerp(k.sun, 0.15f));
+			Ref<Sky> sky_res = e->get_sky();
+			if (sky_res.is_valid()) {
+				Ref<ShaderMaterial> sm = sky_res->get_material();
+				if (sm.is_valid()) {
+					sm->set_shader_parameter("top_color", Vector3(sky.r * 0.62f, sky.g * 0.72f, sky.b * 0.95f));
+					sm->set_shader_parameter("horizon_color", Vector3(sky.r * 1.05f, sky.g * 1.02f, sky.b));
+					sm->set_shader_parameter("ground_color", Vector3(0.25f, 0.28f, 0.24f) * k.ambient_energy);
+					Color cloud = k.sun.lerp(Color(1, 1, 1), 0.55f).lerp(Color(0.55f, 0.57f, 0.6f), rain_amount_);
+					sm->set_shader_parameter("cloud_color", Vector3(cloud.r, cloud.g, cloud.b));
+					sm->set_shader_parameter("cloud_cover", 0.4f + 0.55f * rain_amount_ + 0.1f * (1.0f - warmth_));
+					sm->set_shader_parameter("night", 1.0f - std::max(0.0f, std::min(1.0f, (k.energy - 0.1f) / 0.4f)));
+				}
+			}
 			e->set_ambient_light_color(k.ambient * tint);
 			e->set_ambient_light_energy(k.ambient_energy * 0.5f);
 			e->set_adjustment_enabled(true);
