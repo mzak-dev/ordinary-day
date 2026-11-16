@@ -928,7 +928,8 @@ func _collect_prompts() -> Dictionary:
 		out["link:%s:%s" % [l.id, l.from_a]] = {
 			"cap": "W" if up else "S", "text": text, "sub": sub,
 			"pos": Vector3(float(l.x), py + 2.2, pz), "active": active, "ok": l.ok,
-			"order": 0 if up else 1,
+			# Stack bottom-up: stairs down, stairs up (kept as a pair), then doors.
+			"order": (1 if up else 0) if anim == "stairs" else 2,
 		}
 	for id in npc_actions:
 		var a: Dictionary = world.get_npc_anchor(id)
@@ -939,7 +940,7 @@ func _collect_prompts() -> Dictionary:
 			continue
 		out["npc:" + id] = {
 			"cap": "E", "text": String(npc_actions[id]), "sub": "",
-			"pos": p + Vector3(0, 0.55, 0), "active": absf(p.x - px) < 1.8, "ok": true, "order": 2,
+			"pos": p + Vector3(0, 0.55, 0), "active": absf(p.x - px) < 1.8, "ok": true, "order": 3,
 		}
 	return out
 
