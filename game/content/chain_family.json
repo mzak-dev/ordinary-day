@@ -1,0 +1,154 @@
+{
+	// Rodzina: obiady, troska mamy, regał taty, niedzielna rozmowa.
+	"actions": [
+		{
+			"id": "breakfast", "label": "Śniadanie z rodzicami", "loc": "kitchen", "group": "rodzina", "cost": 2, "limit": "daily",
+			"when": [ "$time<09:00", "npc:mama@here|npc:tata@here" ],
+			"effects": [ "$energy+=10", "$warmth+=2", "$rel.mama+=3", "$battery-=3" ],
+			"text": {
+				"cold": "Jajecznica. Radio. Nikt nic nie mówi i w sumie to jest w porządku.",
+				"warm": "Tata czyta na głos najgłupsze nagłówki. Mama udaje, że się nie śmieje."
+			},
+			"outcomes": [
+				{
+					"when": [ "day:thu", "helped_halina", "!halina_request" ],
+					"effects": [ "set:halina_request" ],
+					"text": "Mama: „Pani Halina się rozchorowała. Pytała, czy nie kupiłbyś karmy dla jej kota. Mówiła, że porządny z ciebie chłopak.”"
+				},
+				{ "when": [ "mom_worry>=2" ], "text": "Mama patrzy na ciebie dłużej niż zwykle. „Wszystko dobrze?” – „Mhm.”" }
+			]
+		},
+		{
+			"id": "dinner", "label": "Obiad z rodzicami", "loc": "kitchen", "group": "rodzina", "cost": 3, "limit": "daily",
+			"when": [ "$time>=17:00", "$time<20:00", "npc:mama@here", "!day:sun" ],
+			"effects": [ "set:dined", "$energy+=15", "$warmth+=4", "$rel.mama+=5", "add:mom_worry=-1", "$battery-=4" ],
+			"text": {
+				"cold": "Pomidorowa. Pytanie „jak na uczelni?”. Odpowiedź „normalnie”.",
+				"warm": "Pomidorowa z ryżem, jak zawsze. Tym razem mówisz więcej niż „normalnie” – a mama słucha, odkładając łyżkę."
+			},
+			"outcomes": [
+				{
+					"when": [ "npc:tata@here", "day:wed|day:thu|day:fri", "!dad_asked_shelf" ],
+					"effects": [ "$rel.tata+=4", "set:dad_asked_shelf" ],
+					"text": "Tata pyta, czy w sobotę nie pomógłbyś mu z regałem. Mówi to tak, jakby robił ci przysługę."
+				},
+				{ "when": [ "npc:tata@here" ], "effects": [ "$rel.tata+=3" ], "text": "Tata komentuje wiadomości. Kiwasz głową w odpowiednich momentach." }
+			]
+		},
+		{
+			"id": "evening_tea", "label": "Herbata z mamą", "loc": "kitchen", "group": "rodzina", "cost": 2, "limit": "daily",
+			"when": [ "$time>=20:00", "npc:mama@here" ],
+			"effects": [ "set:warm_tea", "$warmth+=3", "$rel.mama+=4", "$battery+=2" ],
+			"text": {
+				"cold": "Dwa kubki, serial w tle. Mama zasypia w połowie odcinka.",
+				"warm": "Mama opowiada, jak w twoim wieku uciekła z wesela kuzynki, bo „za dużo ludzi”. Nigdy ci tego nie mówiła."
+			},
+			"outcomes": [
+				{ "when": [ "got_wet" ], "text": "Z cytryną i miodem, „bo przemokłeś jak kura”." }
+			]
+		},
+		{
+			"id": "give_cake_mom", "label": "Daj mamie sernik od sąsiadki", "loc": "kitchen", "group": "rodzina", "cost": 1, "limit": "once",
+			"when": [ "item:cake", "npc:mama@here" ],
+			"effects": [ "take:cake", "add:mom_worry=-2", "$rel.mama+=10", "$warmth+=6", "set:cake_mom" ],
+			"text": "Mama kroi sernik na sześć równych części. „Pani Halina? Ty jej pomogłeś?” Patrzy na ciebie jak na kogoś nowego."
+		},
+		{
+			"id": "tell_mom_plan", "label": "Powiedz mamie o przeprowadzce", "loc": "kitchen", "group": "rodzina", "cost": 2, "limit": "once",
+			"when": [ "room_agreed|flat_agreed", "npc:mama@here", "!moving_out" ],
+			"effects": [ "set:told_mom" ],
+			"outcomes": [
+				{ "when": [ "mom_worry>=3" ], "effects": [ "$rel.mama-=5", "$mood-=5" ], "text": "„Teraz? Kiedy prawie nie wychodzisz z pokoju?” Mama wychodzi do łazienki i długo leci woda." },
+				{ "when": [], "effects": [ "$rel.mama+=10", "$warmth+=6" ], "text": "Mama długo milczy. Potem pyta, czy tam jest pralka. I czy ta Ola gotuje." }
+			]
+		},
+		{
+			"id": "help_dad_shelf", "label": "Pomóż tacie z regałem", "loc": "kitchen", "group": "rodzina", "cost": 6, "limit": "once",
+			"when": [ "day:sat", "$time>=10:00", "$time<16:00", "npc:tata@here" ],
+			"requires": [ { "if": [ "$energy>=15" ], "why": "Ledwo stoisz. Tata to widzi i macha ręką." } ],
+			"effects": [ "set:helped_dad", "$rel.tata+=15", "$warmth+=8", "$energy-=10" ],
+			"text": {
+				"cold": "Instrukcja z IKEI, brakująca śrubka, tata klnie pod nosem. Po trzech godzinach regał stoi. Prawie prosto.",
+				"warm": "Tata trzyma półkę, ty kręcisz. Opowiada o swoim pierwszym mieszkaniu – „trzy metry kwadratowe i karaluch o imieniu Zenek”."
+			},
+			"outcomes": [
+				{
+					"when": [ "room_agreed|flat_agreed" ],
+					"effects": [ "set:told_dad", "$money+=300" ],
+					"text": "Mówisz mu o pokoju. Tata przez chwilę dokręca tę samą śrubę. Potem wyjmuje z portfela trzy stówy. „Na start. Mamie powiemy razem.”"
+				}
+			]
+		},
+		{
+			"id": "sunday_dinner", "label": "Niedzielny obiad", "loc": "kitchen", "group": "rodzina", "cost": 4, "limit": "once",
+			"when": [ "day:sun", "$time>=13:00", "$time<17:00", "npc:mama@here" ],
+			"effects": [ "set:sunday_dinner", "$energy+=15", "$battery-=5" ],
+			"outcomes": [
+				{
+					"when": [ "room_agreed|flat_agreed", "!mom_fight|told_mom|cake_mom", "$rel.mama>=30|told_dad|told_mom" ],
+					"effects": [ "set:moving_out", "set:moved_warm", "$warmth+=15", "$rel.mama+=10" ],
+					"text": "Przy rosole mówisz, że od jutra mieszkasz gdzie indziej. Mama płacze, ale to ten dobry płacz. Tata pakuje ci słoiki do kartonu po bananach."
+				},
+				{
+					"when": [ "room_agreed|flat_agreed" ],
+					"effects": [ "set:moving_out", "set:moved_cold", "$rel.mama-=15", "$mood-=10" ],
+					"text": "„Wyprowadzam się.” Widelec mamy stuka o talerz. „Tak po prostu? Nawet nie powiedziałeś…” Reszta obiadu mija w ciszy, która ma ostre krawędzie."
+				},
+				{
+					"when": [ "mom_fight" ],
+					"effects": [ "set:made_up", "$warmth+=6", "$rel.mama+=8" ],
+					"text": "Nikt nie wraca do czwartku. Mama bez słowa dokłada ci kotleta. To jej sposób na „przepraszam”. Twój to zjedzenie go do końca."
+				},
+				{
+					"when": [],
+					"effects": [ "$warmth+=5", "$rel.mama+=3" ],
+					"text": { "cold": "Rosół, schabowy, kompot. Telewizor gra. Tydzień się kończy.", "warm": "Rosół, schabowy, kompot. Tata opowiada ten sam dowcip co zawsze i tym razem śmiejesz się naprawdę." }
+				}
+			]
+		},
+		{
+			"id": "pack_move", "label": "Spakuj się i wyprowadź", "loc": "room", "group": "przeprowadzka", "cost": 8, "limit": "once",
+			"when": [ "moving_out" ],
+			"effects": [ "set:moved_out", "ending:auto" ],
+			"text": "Trzy kartony, plecak, komputer. Pokój wygląda nagle na mniejszy niż przez ostatnie dwadzieścia lat."
+		},
+		{
+			"id": "pack_secret", "label": "Spakuj się po cichu i wyjdź", "loc": "room", "group": "przeprowadzka", "cost": 6, "limit": "once",
+			"when": [ "day:sun", "$time>=16:00", "room_agreed|flat_agreed", "!moving_out" ],
+			"effects": [ "set:moved_out", "set:moved_secret", "ending:auto" ],
+			"text": "Zostawiasz karteczkę na lodówce. Trzy zdania. Przepisujesz je cztery razy."
+		}
+	],
+
+	"rules": [
+		{
+			"id": "intro", "label": "Poniedziałek",
+			"when": [ "started" ],
+			"text": {
+				"cold": "Budzik. Poniedziałek. Za ścianą mama słucha radia. Sufit jest dokładnie taki sam jak wczoraj.",
+				"warm": "Budzik. Poniedziałek."
+			}
+		},
+		{ "id": "morning_reset", "hidden": true, "label": "Nowy dzień", "repeat": "daily", "when": [ "$time>=07:00" ], "effects": [ "clear:dined", "clear:warm_tea" ] },
+		{
+			"id": "dinner_missed", "label": "Pusty talerz przy stole", "repeat": "daily",
+			"when": [ "$time>=19:45", "!dined", "!day:sun" ],
+			"effects": [ "add:mom_worry=1" ],
+			"text": "Gdzieś w kuchni stygnie talerz zupy przykryty drugim talerzem."
+		},
+		{
+			"id": "mom_worry_grows", "label": "Mama się martwi",
+			"when": [ "mom_worry>=2" ],
+			"effects": [ "phone:mom_worry|Mama|Synku, wszystko dobrze? Prawie cię nie widujemy. Zostawiłam ci obiad w lodówce." ]
+		},
+		{
+			"id": "thursday_talk", "label": "Czwartkowa rozmowa z mamą",
+			"when": [ "day:thu", "$time>=18:30", "mom_worry>=3" ],
+			"check": [ "at:kitchen,room" ],
+			"effects": [ "set:mom_fight", "$rel.mama-=10", "$mood-=12", "$warmth-=4" ],
+			"text": "Mama staje w drzwiach pokoju. „Całe dnie przed tym komputerem. Martwię się, rozumiesz? Martwię!” Mówisz coś, czego nie chciałeś powiedzieć. Drzwi zamykają się trochę za mocno.",
+			"else_effects": [ "add:mom_worry=2", "set:mom_hurt" ],
+			"else_text": "Mama czekała dziś z rozmową. Nie było cię. Rozmowa poczeka – i urośnie."
+		}
+	]
+}

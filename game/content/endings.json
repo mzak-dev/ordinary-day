@@ -1,0 +1,50 @@
+{
+	// Zakończenia sprawdzane po kolei – wygrywa pierwsze pasujące.
+	"endings": [
+		{
+			"id": "moved_warm", "title": "Klucze w dłoni",
+			"when": [ "moved_out", "moved_warm" ],
+			"text": "Mama odprowadza cię do drzwi z siatką słoików. Tata niesie karton z komputerem i udaje, że nie jest ciężki. Nowy pokój pachnie cudzą farbą i trochę twoją przyszłością. Pierwszego wieczoru dzwonisz do domu. Sam z siebie."
+		},
+		{
+			"id": "moved_cold", "title": "Trzaśnięcie drzwiami",
+			"when": [ "moved_out" ],
+			"text": "Nowy pokój. Ta sama cisza, tylko w innym kolorze. Telefon milczy do środy. W czwartek przychodzi SMS od mamy: „Jesz coś?”. Patrzysz na niego bardzo długo."
+		},
+		{
+			"id": "stayed_warm", "title": "Ten sam pokój, inne światło",
+			"when": [ "$warmth>=50" ],
+			"text": "Zostajesz. Ten sam pokój, ten sam sufit – ale teraz wiesz, kto mieszka piętro wyżej, jak ma na imię kot sąsiadki i że tata kiedyś też się bał. Tydzień był zwyczajny. Właśnie dlatego był dobry."
+		},
+		{
+			"id": "stayed_quiet", "title": "Cisza, która nie boli",
+			"when": [ "$mood>=45" ],
+			"text": "Nic wielkiego się nie wydarzyło. Grałeś, czytałeś, spałeś. Może to nie jest życie z filmu. Ale jest twoje, i w niedzielę wieczorem nie czujesz, że coś przegapiłeś. Prawie."
+		},
+		{
+			"id": "stayed_cold", "title": "Kolejny tydzień",
+			"when": [],
+			"text": "Niedziela, 23:40. Ekran monitora jest jedynym źródłem światła. Gdzieś w bloku ktoś się śmieje. Jutro poniedziałek. Taki sam jak ten."
+		}
+	],
+
+	"epilogue": [
+		{ "when": [ "colloq_passed" ], "text": "Kolokwium z algorytmów: zaliczone." },
+		{ "when": [ "colloq_failed" ], "text": "Kolokwium: oblane. Poprawka za dwa tygodnie." },
+		{ "when": [ "colloq_missed" ], "text": "Na kolokwium nawet nie dotarłeś." },
+		{ "when": [ "project_done", "$rel.marta>=15" ], "text": "Marta zaprasza cię do grupy na kolejny semestr. Pisze „z tobą się dobrze pracuje”." },
+		{ "when": [ "project_done", "$rel.marta<15" ], "text": "Projekt zaliczony." },
+		{ "when": [ "project_failed" ], "text": "Projekt niezaliczony. Marta zmienia grupę." },
+		{ "when": [ "fired" ], "text": "Pan Zbyszek przyjął kogoś nowego. Ponoć robi gorszą pianę." },
+		{ "when": [ "commission_paid" ], "text": "Twoje ikony są w modzie Wiedźmy_77. Pobrano 3 412 razy." },
+		{ "when": [ "diamond", "!commission_paid" ], "text": "Ranga Diament. Nikt w domu nie wie, co to znaczy." },
+		{ "when": [ "fed_cat" ], "text": "Pani Halina wyzdrowiała. Filemon przytył. Na wycieraczce czasem znajdujesz drożdżówkę." },
+		{ "when": [ "helped_halina", "!fed_cat" ], "text": "Pani Halina mówi ci teraz „dzień dobry” pierwsza." },
+		{ "when": [ "frisbee" ], "text": "Kuba pisze w każdą sobotę: „Frisbee?”. Czasem nawet odpisujesz „tak”." },
+		{ "when": [ "knows_ola", "!room_agreed" ], "text": "Ola macha ci na klatce. Raz w tygodniu pijecie herbatę." },
+		{ "when": [ "room_taken", "!know_room_offer" ], "text": "Na trzecie piętro wprowadziła się jakaś dziewczyna z siłowni. Nigdy się nie dowiesz, że ten pokój mógł być twój." },
+		{ "when": [ "lost_ola_number" ], "text": "Numer Oli spłynął pod prysznicem. Myślisz o tym częściej, niż powinieneś." },
+		{ "when": [ "sick" ], "text": "Kaszel ciągnął się jeszcze tydzień. Następnym razem parasol." },
+		{ "when": [ "mom_fight", "!made_up" ], "text": "Czwartkowa kłótnia z mamą wisi w mieszkaniu jak zapach przypalonego mleka." }
+	]
+}

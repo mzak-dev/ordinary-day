@@ -1,0 +1,97 @@
+{
+	// Pani Halina z 1. piętra: siatki → sernik → karma dla kota → kawalerka siostrzeńca.
+	// Druga ścieżka: zapomniane klucze → herbata u sąsiadki.
+	"actions": [
+		{
+			"id": "greet_halina", "label": "Powiedz „dzień dobry”", "loc": [ "stairwell", "halina" ], "group": "ludzie", "cost": 0, "limit": "daily",
+			"when": [ "npc:halina@here" ],
+			"effects": [ "$rel.halina+=2", "$battery-=1" ],
+			"text": { "cold": "„Dzień dobry.” „Dzień dobry, dzień dobry!”", "warm": "„Dzień dobry, pani Halino!” Uśmiecha się, jakbyś przyniósł jej kwiaty." }
+		},
+		{
+			"id": "help_halina", "label": "Pomóż z siatkami", "loc": "stairwell", "group": "ludzie", "cost": 2, "limit": "once",
+			"when": [ "npc:halina@here", "day:tue" ],
+			"requires": [ { "if": [ "$battery>=10" ], "why": "Nie masz w sobie ani jednego „dzień dobry”. Mijasz ją wzrokiem w podłodze." } ],
+			"effects": [ "set:helped_halina", "$rel.halina+=15", "$warmth+=6", "$battery-=6", "$energy-=4" ],
+			"text": {
+				"cold": "Dwie siatki ziemniaków na pierwsze piętro. Pani Halina dziękuje cztery razy. Za każdym razem bardziej.",
+				"warm": "Dwie siatki ziemniaków, cztery podziękowania i historia o kocie, który boi się odkurzacza. Zaskakująco dobra historia."
+			}
+		},
+		{
+			"id": "knock_halina", "label": "Zapukaj do sąsiadki (nie masz kluczy)", "loc": "stairwell", "group": "ludzie", "cost": 4, "limit": "once",
+			"when": [ "!item:keys", "!npc:mama@kitchen", "!npc:tata@kitchen", "npc:halina@halina" ],
+			"effects": [ "set:tea_with_halina", "set:warm_tea", "$rel.halina+=12", "$warmth+=8", "$battery-=4" ],
+			"text": "Pani Halina wpuszcza cię bez pytań. Herbata w szklance z koszyczkiem, wafelki, kot Filemon na kolanach. Nie musisz nic mówić – ona mówi za dwoje.",
+			"outcomes": [
+				{ "when": [ "$rel.halina>=10" ], "effects": [ "set:know_flat_halina" ], "text": "„Mój siostrzeniec wynajmuje kawalerkę na Bałutach. Szuka kogoś spokojnego. Ty jesteś spokojny.”" }
+			]
+		},
+		{
+			"id": "wait_stairs", "label": "Posiedź na schodach", "loc": "stairwell", "group": "czekanie", "cost": 4,
+			"when": [ "!item:keys", "!npc:mama@kitchen", "!npc:tata@kitchen" ],
+			"effects": [ "$battery+=3", "$mood-=4" ],
+			"text": "Zimny lastryko, zapach czyjegoś obiadu. Liczysz stopnie. Dwadzieścia dwa."
+		},
+		{
+			"id": "tea_halina", "label": "Herbata z panią Haliną", "loc": "halina", "group": "ludzie", "cost": 3, "limit": "daily",
+			"when": [ "npc:halina@here" ],
+			"effects": [ "set:warm_tea", "$rel.halina+=6", "$warmth+=4", "$battery-=2" ],
+			"text": { "cold": "Herbata, wafelki, Filemon. Pani Halina opowiada o mężu. Słuchasz. To łatwiejsze niż mówienie.", "warm": "Pani Halina pokazuje ci album ze zdjęciami. Na jednym jest twoja mama, młodsza od ciebie." },
+			"outcomes": [
+				{ "when": [ "$rel.halina>=25", "!know_flat_halina" ], "effects": [ "set:know_flat_halina" ], "text": "„Mój siostrzeniec ma kawalerkę do wynajęcia. Dałabym ci numer, ale musisz zadzwonić sam, bo on nie odbiera nieznanych.”" }
+			]
+		},
+		{
+			"id": "buy_cat_food", "label": "Kup karmę dla kota (14 zł)", "loc": "shop", "group": "zakupy", "cost": 1, "limit": "once",
+			"when": [ "halina_request", "!fed_cat" ],
+			"requires": [ { "if": [ "item:wallet" ], "why": "Portfel został w domu." }, { "if": [ "$money>=14" ], "why": "Nie masz pieniędzy." } ],
+			"effects": [ "give:cat_food", "$money-=14" ],
+			"text": "Bierzesz tę z kotem w muszce na opakowaniu. Filemon wygląda na takiego, co doceni muszkę."
+		},
+		{
+			"id": "deliver_cat_food", "label": "Zanieś karmę dla Filemona", "loc": "halina", "group": "ludzie", "cost": 2, "limit": "once",
+			"when": [ "item:cat_food", "npc:halina@here" ],
+			"effects": [ "take:cat_food", "set:fed_cat", "$rel.halina+=20", "$warmth+=10" ],
+			"text": "Pani Halina w szlafroku, z nosem czerwonym od kataru. Filemon ociera się o twoje nogi. „Złote dziecko” – mówi, i chyba naprawdę tak myśli.",
+			"outcomes": [
+				{ "when": [ "!know_flat_halina" ], "effects": [ "set:know_flat_halina" ], "text": "„Słuchaj, mój siostrzeniec ma kawalerkę. Szuka kogoś porządnego. Zadzwoń do niego, powiedz, że ode mnie.”" }
+			]
+		},
+		{
+			"id": "call_nephew", "label": "Zadzwoń do siostrzeńca pani Haliny", "group": "przeprowadzka", "cost": 1, "limit": "once",
+			"when": [ "know_flat_halina", "!flat_agreed", "!room_agreed", "!flat_gone" ],
+			"requires": [
+				{ "if": [ "item:phone" ], "why": "Nie masz przy sobie telefonu." },
+				{ "if": [ "$battery>=20" ], "why": "Rozmowa telefoniczna z obcym? Nie dziś. Nie z tą baterią." },
+				{ "if": [ "$money>=1200" ], "why": "Kaucja i pierwszy czynsz to 1200 zł. Masz za mało." }
+			],
+			"effects": [ "set:flat_agreed", "$money-=1200", "$battery-=15", "$warmth+=4" ],
+			"text": "Sygnał, drugi, trzeci. „Tak?” Mówisz, że od pani Haliny. Po trzech minutach masz mieszkanie. Ręce trzęsą ci się jeszcze przez kwadrans."
+		}
+	],
+
+	"rules": [
+		{
+			"id": "halina_cake", "label": "Pani Halina przynosi sernik",
+			"when": [ "helped_halina" ],
+			"delay": { "days": 1, "at": "10:00" },
+			"check": [ "at:kitchen,room" ],
+			"effects": [ "give:cake" ],
+			"text": "Dzwonek do drzwi. Pani Halina z blachą sernika: „Dla pomocnika!”",
+			"else_effects": [ "stash:cake" ],
+			"else_text": "Pani Halina zostawiła ci sernik u mamy. Czeka w twoim pokoju."
+		},
+		{ "id": "cake_no_room", "label": "Sernik na biurku", "when": [ "no_room_cake" ], "effects": [ "stash:cake" ], "text": "Kieszenie pełne. Odkładasz sernik na biurko." },
+		{
+			"id": "halina_sick", "label": "Pani Halina choruje",
+			"when": [ "day:thu", "!helped_halina", "!tea_with_halina" ],
+			"text": "Na klatce pachnie maścią rozgrzewającą. Ktoś na pierwszym piętrze kaszle."
+		},
+		{
+			"id": "flat_gone", "label": "Kawalerka wynajęta komuś innemu",
+			"when": [ "know_flat_halina", "!flat_agreed", "$day>=5", "$day>=6|$time>=20:00" ],
+			"effects": [ "set:flat_gone" ]
+		}
+	]
+}

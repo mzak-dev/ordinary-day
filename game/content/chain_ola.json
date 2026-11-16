@@ -1,0 +1,158 @@
+{
+	// Siłownia → Kuba → domówka → Ola → pokój do wynajęcia.
+	// Ominięcie siłowni w poniedziałek zamyka najkrótszą drogę; zostają Żabka we wtorek i park w czwartek.
+	"actions": [
+		{
+			"id": "train", "label": "Trenuj (1 h)", "loc": "gym", "group": "siłownia", "cost": 4, "limit": "daily",
+			"requires": [ { "if": [ "$energy>=20" ], "why": "Nie masz siły nawet na rozgrzewkę." } ],
+			"effects": [ "$energy-=15", "$mood+=8", "set:trained" ],
+			"outcomes": [
+				{
+					"when": [ "npc:kuba@here", "!met_kuba" ],
+					"effects": [ "set:met_kuba", "$rel.kuba+=10", "$warmth+=4", "$battery-=6" ],
+					"text": "Chłopak przy ławce prosi, żebyś go asekurował. „Kuba.” Gadacie o niczym przez dwadzieścia minut. To dziwnie przyjemne."
+				},
+				{
+					"when": [ "npc:kuba@here", "!know_room_offer", "day:wed|day:fri" ],
+					"effects": [ "set:know_room_offer", "$rel.kuba+=5" ],
+					"text": "Kuba między seriami: „Ola z twojego bloku szuka kogoś do pokoju. Jej współlokatorka wyjeżdża do Berlina. Mówię ci, bo wyglądasz na kogoś, kto zmywa po sobie.”"
+				},
+				{ "when": [ "npc:kuba@here" ], "effects": [ "$rel.kuba+=5", "$warmth+=2" ], "text": "Kuba macha do ciebie z drugiego końca sali. Odmachujesz. Nikt nie umarł." },
+				{ "when": [], "text": { "cold": "Słuchawki, bieżnia, nikt cię nie zaczepia. Mięśnie bolą w dobry sposób.", "warm": "Bieżnia, okno, deszczowe osiedle. Myślisz o tym, ile rzeczy jeszcze możesz zrobić w tym tygodniu." } }
+			]
+		},
+		{
+			"id": "talk_ola_shop", "label": "Pomóż nieznajomej zebrać jabłka", "loc": "shop", "group": "ludzie", "cost": 1, "limit": "once",
+			"when": [ "npc:ola@here", "!met_ola_shop", "!knows_ola" ],
+			"requires": [ { "if": [ "$battery>=20" ], "why": "Udajesz, że czytasz skład jogurtu, aż sobie pójdzie." } ],
+			"effects": [ "set:met_ola_shop", "$rel.ola+=8", "$warmth+=4", "$battery-=5" ],
+			"text": "Dziewczynie pęka siatka. Jabłka turlają się pod lodówkę z napojami. Zbieracie je razem. „Dzięki, sąsiedzie.” Sąsiedzie?"
+		},
+		{
+			"id": "party_mingle", "label": "Wejdź między ludzi", "loc": "ola_flat", "group": "impreza", "cost": 4, "limit": "once",
+			"when": [ "party_now" ],
+			"effects": [ "set:went_party", "$battery-=8" ],
+			"outcomes": [
+				{
+					"when": [ "$battery>=35", "met_ola_shop" ],
+					"effects": [ "set:knows_ola", "set:know_room_offer", "$rel.ola+=25", "$warmth+=12", "set:party_good" ],
+					"text": "„To ty! Pan od jabłek!” Ola ciągnie cię na balkon. Rozmawiacie o książkach, o bloku, o tym, że jej współlokatorka wyjeżdża i pokój stoi pusty."
+				},
+				{
+					"when": [ "$battery>=35" ],
+					"effects": [ "set:knows_ola", "set:know_room_offer", "$rel.ola+=15", "$warmth+=10", "set:party_good" ],
+					"text": "Gospodyni ma na imię Ola i mieszka piętro nad tobą od dwóch lat. Dwa lata. Mówi, że szuka kogoś do pokoju."
+				},
+				{
+					"when": [ "$rel.kuba>=10" ],
+					"effects": [ "set:knows_ola", "set:know_room_offer", "$rel.ola+=8", "$warmth+=5" ],
+					"text": "Bateria na zero, ale Kuba nie daje ci uciec. „Ola, to ten od asekuracji.” Ola się śmieje. Mówisz trzy zdania. Jedno z nich jest nawet zabawne."
+				},
+				{
+					"when": [],
+					"effects": [ "set:party_awkward", "$mood-=10", "$battery-=10" ],
+					"text": "Stoisz przy lodówce z kubkiem soku. Ktoś pyta, czyj jesteś znajomy. Po czterdziestu minutach wychodzisz po angielsku."
+				}
+			]
+		},
+		{
+			"id": "share_cake", "label": "Postaw sernik na stole", "loc": "ola_flat", "group": "impreza", "cost": 1, "limit": "once",
+			"when": [ "party_now", "item:cake" ],
+			"effects": [ "take:cake", "set:cake_shared", "$rel.ola+=10", "$warmth+=8" ],
+			"text": "Sernik pani Haliny znika w osiem minut. Ola pyta o przepis. Obiecujesz, że zapytasz sąsiadkę. Masz teraz powód, żeby zapukać."
+		},
+		{
+			"id": "talk_ola_park", "label": "Przysiądź się do Oli", "loc": "park", "group": "ludzie", "cost": 3, "limit": "once",
+			"when": [ "npc:ola@here", "knows_ola|met_ola_shop" ],
+			"requires": [ { "if": [ "$battery>=15" ], "why": "Przechodzisz obok udając, że jej nie widzisz. Ona chyba też." } ],
+			"effects": [ "set:knows_ola", "$rel.ola+=10", "$warmth+=8", "$battery-=5" ],
+			"outcomes": [
+				{
+					"when": [ "item:book" ],
+					"effects": [ "$rel.ola+=8", "set:know_room_offer", "set:book_bond" ],
+					"text": "Ola czyta „Rzeczy, których nie wyrzuciłem”. Wyciągasz z kieszeni ten sam tytuł. Przez chwilę oboje się śmiejecie, a potem rozmawiacie dwie godziny. Pod koniec: „Słuchaj, szukam współlokatora…”"
+				},
+				{
+					"when": [ "!know_room_offer" ],
+					"effects": [ "set:know_room_offer" ],
+					"text": "Rozmawiacie o niczym, potem o wszystkim. Ola wspomina, że jej współlokatorka wyjeżdża. „Znasz kogoś cichego, kto szuka pokoju?”"
+				},
+				{ "when": [], "text": "Siedzicie na ławce, każde z telefonem. Co jakiś czas pokazujecie sobie coś śmiesznego. To się liczy." }
+			]
+		},
+		{
+			"id": "visit_ola", "label": "Pogadaj z Olą", "loc": "ola_flat", "group": "ludzie", "cost": 3, "limit": "daily",
+			"when": [ "npc:ola@here", "!party_now" ],
+			"effects": [ "$rel.ola+=5", "$warmth+=4", "$battery-=4" ],
+			"text": { "cold": "Ola robi herbatę. Siedzicie w ciszy, która nie jest niezręczna.", "warm": "Ola pokazuje ci pokój. Okno na park. Z twojego pokoju widać śmietnik. To jest argument." }
+		},
+		{
+			"id": "accept_room", "label": "Napisz Oli: „Biorę pokój”", "group": "przeprowadzka", "cost": 1, "limit": "once",
+			"when": [ "know_room_offer", "!room_agreed", "!room_taken", "!flat_agreed", "at:ola_flat|item:ola_number|ola_number_hand" ],
+			"requires": [
+				{ "if": [ "item:phone|at:ola_flat" ], "why": "Nie masz przy sobie telefonu." },
+				{ "if": [ "$money>=900" ], "why": "Kaucja to 900 zł. Masz za mało." }
+			],
+			"effects": [ "set:room_agreed", "$money-=900", "$warmth+=5", "$mood+=10" ],
+			"text": "Ola: „SERIO?! Klucze w niedzielę. Jest pralka. Nie ma suszarki. Kocham cię (platonicznie)”."
+		},
+		{
+			"id": "frisbee", "label": "Zagraj z Kubą we frisbee", "loc": "park", "group": "ludzie", "cost": 4, "limit": "once",
+			"when": [ "npc:kuba@here" ],
+			"requires": [ { "if": [ "$energy>=20" ], "why": "Nie masz siły biegać." } ],
+			"effects": [ "$rel.kuba+=10", "$warmth+=8", "$energy-=12", "$mood+=8", "set:frisbee" ],
+			"text": { "cold": "Rzucasz krzywo. Kuba łapie wszystko. Po godzinie zapominasz, że ktoś może patrzeć.", "warm": "Frisbee ląduje w fontannie. Wchodzisz po nie w butach. Kuba płacze ze śmiechu. Ty też." }
+		}
+	],
+
+	"rules": [
+		{
+			"id": "kuba_invite_phone", "label": "Kuba zaprasza na domówkę",
+			"when": [ "met_kuba", "$day<=1" ],
+			"delay": { "at": "12:00" },
+			"effects": [ "phone:kuba_party|Kuba|Siema, tu Kuba z siłki. W środę mała domówka u Oli – 3. piętro, chyba w twoim bloku? Wpadaj od 20." ]
+		},
+		{
+			"id": "kuba_invite_live", "label": "Kuba zaprasza osobiście",
+			"when": [ "met_kuba", "day:wed", "!read_kuba_party", "at:gym" ],
+			"effects": [ "set:invited_live" ],
+			"text": "Kuba: „Dziś domówka u Oli z twojego bloku. Trzecie piętro. Wpadaj, serio.”"
+		},
+		{ "id": "party_start", "hidden": true, "label": "Domówka na 3. piętrze", "when": [ "day:wed", "$time>=20:00" ], "effects": [ "set:party_now" ] },
+		{ "id": "party_end", "hidden": true, "label": "Koniec domówki", "when": [ "day:thu" ], "effects": [ "clear:party_now" ] },
+		{
+			"id": "party_noise", "label": "Bas zza sufitu",
+			"when": [ "party_now", "at:room", "!went_party" ],
+			"text": { "cold": "Sufit dudni basem. Ktoś piętro wyżej ma lepszy wieczór.", "warm": "Z góry dobiega muzyka i śmiech. Przez chwilę zastanawiasz się, kto tam mieszka." }
+		},
+		{ "id": "ola_friend", "label": "Ola cię lubi", "when": [ "$rel.ola>=25" ], "effects": [ "set:ola_friend" ] },
+		{
+			"id": "ola_number", "label": "Ola daje ci numer",
+			"when": [ "knows_ola", "$rel.ola>=15", "at:ola_flat,park" ],
+			"effects": [ "give:ola_number", "set:got_ola_number" ],
+			"text": "Ola zapisuje ci numer na karteczce: „Gdybyś chciał obejrzeć pokój. Albo cokolwiek.”"
+		},
+		{
+			"id": "ola_number_hand", "label": "Numer na dłoni",
+			"when": [ "no_room_ola_number" ],
+			"effects": [ "set:ola_number_hand" ],
+			"text": "Nie masz wolnej kieszeni. Ola przewraca oczami i pisze ci numer długopisem na dłoni. „Tylko nie myj rąk.”"
+		},
+		{
+			"id": "hand_washed", "label": "Numer spłynął pod prysznicem", "repeat": "daily",
+			"when": [ "ola_number_hand", "$time<08:00" ],
+			"effects": [ "clear:ola_number_hand", "set:lost_ola_number" ],
+			"text": "Rano pod prysznicem zauważasz rozmazany atrament na dłoni. Numer Oli spłynął do odpływu."
+		},
+		{
+			"id": "room_taken", "label": "Pokój zajęty",
+			"when": [ "know_room_offer", "!room_agreed", "$day>=5", "$day>=6|$time>=20:00" ],
+			"effects": [ "set:room_taken", "phone:room_taken|Ola|Hej, pokój już poszedł – wzięła go dziewczyna z siłowni Kuby. Sorki! Wpadaj czasem na herbatę." ]
+		},
+		{
+			"id": "room_taken_silent", "hidden": true, "label": "Ktoś inny wprowadza się na 3. piętro",
+			"when": [ "!know_room_offer", "$day>=5", "$day>=6|$time>=20:00" ],
+			"effects": [ "set:room_taken" ]
+		}
+	]
+}

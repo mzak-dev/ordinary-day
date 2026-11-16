@@ -1,0 +1,99 @@
+{
+	"items": {
+		"phone": { "name": "Telefon", "desc": "Wiadomości docierają tylko wtedy, gdy masz go przy sobie.", "color": "#263238" },
+		"keys": { "name": "Klucze", "desc": "Bez nich nie wejdziesz do mieszkania, gdy rodziców nie ma.", "color": "#c9a227" },
+		"headphones": { "name": "Słuchawki", "desc": "Ludzie męczą cię o połowę wolniej.", "color": "#d32f2f" },
+		"student_id": { "name": "Legitymacja", "desc": "Darmowy autobus. Wymagana na kolokwium.", "color": "#1e88e5" },
+		"wallet": { "name": "Portfel", "desc": "Bez niego nic nie kupisz.", "color": "#6d4c41" },
+		"gym_pass": { "name": "Karnet", "desc": "Wstęp na siłownię FitBlok.", "color": "#ff7043" },
+		"umbrella": { "name": "Parasol", "desc": "Prognoza na środę: deszcz po południu.", "color": "#5e35b1" },
+		"notes": { "name": "Notatki", "desc": "Notatki z wykładów. Nauka z nimi idzie dwa razy szybciej.", "color": "#fff176" },
+		"laptop": { "name": "Laptop", "desc": "Pozwala pracować nad projektem poza domem.", "color": "#90a4ae" },
+		"book": { "name": "Książka", "desc": "„Rzeczy, których nie wyrzuciłem”. Czytasz ją trzeci raz.", "color": "#43a047" },
+		"cake": { "name": "Sernik", "desc": "Od pani Haliny. Za dużo jak na jedną osobę.", "color": "#ffe082" },
+		"cat_food": { "name": "Karma dla kota", "desc": "Dla Filemona pani Haliny.", "color": "#8bc34a" },
+		"ola_number": { "name": "Numer Oli", "desc": "Karteczka z numerem. „Gdybyś chciał obejrzeć pokój”.", "color": "#f48fb1" }
+	},
+
+	"npcs": {
+		"mama": {
+			"name": "Mama", "sprite": "mama",
+			"schedule": [
+				{ "days": "*", "from": "07:00", "to": "08:30", "loc": "kitchen", "x": 8.0, "activity": "śniadanie" },
+				{ "days": "mon,wed,fri", "from": "14:00", "to": "23:30", "loc": "kitchen", "x": 7.2 },
+				{ "days": "tue,thu", "from": "08:30", "to": "12:00", "loc": "kitchen", "x": 7.2 },
+				{ "days": "tue,thu", "from": "16:00", "to": "23:30", "loc": "kitchen", "x": 7.2 },
+				{ "days": "weekend", "from": "08:30", "to": "23:30", "loc": "kitchen", "x": 7.2 }
+			]
+		},
+		"tata": {
+			"name": "Tata", "sprite": "tata",
+			"schedule": [
+				{ "days": "weekdays", "from": "07:00", "to": "07:45", "loc": "kitchen", "x": 9.8 },
+				{ "days": "weekdays", "from": "17:00", "to": "23:30", "loc": "kitchen", "x": 9.8 },
+				{ "days": "weekend", "from": "09:00", "to": "23:30", "loc": "kitchen", "x": 9.8 }
+			]
+		},
+		"halina": {
+			"name": "Pani Halina", "sprite": "halina",
+			"schedule": [
+				{ "days": "tue", "from": "10:00", "to": "11:30", "loc": "stairwell", "x": 4.5, "activity": "z ciężkimi siatkami" },
+				{ "days": "*", "from": "07:00", "to": "22:00", "loc": "halina", "x": 9.8 }
+			]
+		},
+		"kuba": {
+			"name": "Kuba", "unknown_name": "Chłopak z siłowni", "known_fact": "met_kuba", "sprite": "kuba",
+			"schedule": [
+				{ "days": "mon,wed,fri", "from": "17:00", "to": "19:00", "loc": "gym", "x": 45.4 },
+				{ "days": "wed", "from": "20:00", "to": "24:00", "loc": "ola_flat", "x": 8.8 },
+				{ "days": "tue,thu", "from": "10:00", "to": "14:00", "loc": "library", "x": 224.0 },
+				{ "days": "sat", "from": "12:00", "to": "15:00", "loc": "park", "x": 79.0, "when": [ "met_kuba" ] }
+			]
+		},
+		"ola": {
+			"name": "Ola", "unknown_name": "Nieznajoma", "known_fact": "knows_ola", "sprite": "ola",
+			"schedule": [
+				{ "days": "tue", "from": "18:00", "to": "19:00", "loc": "shop", "x": 28.8 },
+				{ "days": "thu", "from": "16:00", "to": "18:00", "loc": "park", "x": 70.2 },
+				{ "days": "sat", "from": "12:00", "to": "13:00", "loc": "cafe", "x": 243.6, "when": [ "knows_ola" ] },
+				{ "days": "*", "from": "19:00", "to": "24:00", "loc": "ola_flat", "x": 12.5 },
+				{ "days": "weekend", "from": "09:00", "to": "12:00", "loc": "ola_flat", "x": 12.5 }
+			]
+		},
+		"marta": {
+			"name": "Marta", "unknown_name": "Ktoś z grupy", "known_fact": "known_marta", "sprite": "marta",
+			"schedule": [
+				{ "days": "mon,wed", "from": "09:30", "to": "12:30", "loc": "uni", "x": 219.0 },
+				{ "days": "wed", "from": "14:00", "to": "16:00", "loc": "library", "x": 220.0 },
+				{ "days": "thu", "from": "09:30", "to": "12:00", "loc": "uni", "x": 216.0 },
+				{ "days": "fri", "from": "10:30", "to": "13:00", "loc": "uni", "x": 219.0 }
+			]
+		},
+		"nowak": {
+			"name": "dr Nowak", "sprite": "nowak",
+			"schedule": [
+				{ "days": "mon,wed", "from": "09:45", "to": "12:15", "loc": "uni", "x": 222.5 },
+				{ "days": "thu", "from": "09:30", "to": "12:00", "loc": "uni", "x": 222.5 },
+				{ "days": "fri", "from": "10:45", "to": "13:00", "loc": "uni", "x": 222.5 }
+			]
+		},
+		"szef": {
+			"name": "Pan Zbyszek", "sprite": "szef",
+			"schedule": [
+				{ "days": "mon,tue,wed,thu,fri,sat", "from": "08:00", "to": "21:00", "loc": "cafe", "x": 247.8 }
+			]
+		}
+	},
+
+	"start": {
+		"location": "room",
+		"stats": { "battery": 60, "energy": 70, "mood": 45, "warmth": 15, "money": 650, "rel.mama": 20, "rel.tata": 15 },
+		"inventory": [ "phone", "keys", "headphones" ],
+		"stash": [ "student_id", "wallet", "gym_pass", "umbrella", "notes", "laptop", "book" ],
+		"facts": { "started": 1 }
+	},
+
+	"weather": [
+		{ "days": "wed", "from": "12:00", "to": "18:00", "type": "rain" }
+	]
+}

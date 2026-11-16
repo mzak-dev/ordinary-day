@@ -1,0 +1,137 @@
+{
+	// Studia: wykłady, projekt grupowy z Martą (piątek), kolokwium (czwartek).
+	"actions": [
+		{
+			"id": "lecture_mon", "label": "Wykład z algorytmów (2 h)", "loc": "uni", "group": "zajęcia", "cost": 8, "limit": "once",
+			"when": [ "day:mon", "$time>=09:30", "$time<=10:30" ],
+			"effects": [ "set:attended_mon", "add:study=1", "$energy-=8" ],
+			"text": "Dr Nowak rysuje drzewa binarne. Ty rysujesz na marginesie drzewo zwykłe.",
+			"outcomes": [
+				{
+					"when": [ "npc:marta@here", "!project_assigned" ],
+					"effects": [ "set:project_assigned", "set:known_marta", "$rel.marta+=5" ],
+					"text": "Dziewczyna z rzędu przed tobą odwraca się: „Jesteś w naszej grupie projektowej? Marta. Weźmiesz bazę danych? Oddajemy w piątek o jedenastej.”"
+				}
+			]
+		},
+		{
+			"id": "lecture_wed", "label": "Wykład z algorytmów (2 h)", "loc": "uni", "group": "zajęcia", "cost": 8, "limit": "once",
+			"when": [ "day:wed", "$time>=09:30", "$time<=10:30" ],
+			"effects": [ "set:attended_wed", "add:study=1", "$energy-=8" ],
+			"text": "Grafy. Dr Nowak mówi, że „na kolokwium będzie podobne”. Wszyscy wiedzą, co to znaczy.",
+			"outcomes": [
+				{
+					"when": [ "npc:marta@here", "!project_assigned" ],
+					"effects": [ "set:project_assigned", "set:known_marta", "$rel.marta+=3" ],
+					"text": "Marta: „Hej, ty jesteś od nas z grupy? Zostały tylko bazy danych. Piątek, jedenasta.”"
+				},
+				{
+					"when": [ "npc:marta@here", "project_assigned" ],
+					"effects": [ "set:meeting_planned", "$rel.marta+=3" ],
+					"text": "Marta: „Spotkanie w bibliotece o 14? Ogarniemy całość w dwie godziny.”"
+				}
+			]
+		},
+		{
+			"id": "study_room", "label": "Ucz się do kolokwium (2 h)", "loc": "room", "group": "nauka", "cost": 8,
+			"when": [ "$day<=3", "!colloq_passed", "!colloq_failed" ],
+			"requires": [ { "if": [ "$energy>=15" ], "why": "Litery pływają po stronie. Musisz odpocząć." } ],
+			"effects": [ "add:study=1", "$energy-=12", "$mood-=2" ],
+			"text": { "cold": "Slajdy, kawa, slajdy. Algorytm Dijkstry w końcu ma sens. Na chwilę.", "warm": "Tłumaczysz sobie grafy na przykładzie bloku: każde mieszkanie to wierzchołek. Działa." },
+			"outcomes": [ { "when": [ "item:notes" ], "effects": [ "add:study=1" ], "text": "Z notatkami idzie dwa razy szybciej." } ]
+		},
+		{
+			"id": "study_library", "label": "Ucz się w bibliotece (2 h)", "loc": "library", "group": "nauka", "cost": 8,
+			"when": [ "$day<=3", "!colloq_passed", "!colloq_failed" ],
+			"requires": [ { "if": [ "$energy>=15" ], "why": "Zasypiasz nad książką." } ],
+			"effects": [ "add:study=1", "$energy-=10" ],
+			"text": "Cisza biblioteki to jedyna cisza, w której nikt nie oczekuje, że ją przerwiesz.",
+			"outcomes": [ { "when": [ "item:notes" ], "effects": [ "add:study=1" ], "text": "Notatki robią robotę." } ]
+		},
+		{
+			"id": "project_room", "label": "Pracuj nad projektem (2 h)", "loc": "room", "group": "projekt", "cost": 8,
+			"when": [ "project_assigned", "!project_done", "!project_failed" ],
+			"requires": [ { "if": [ "$energy>=15" ], "why": "Kod się nie kompiluje. Ty też nie." } ],
+			"effects": [ "add:project_work=1", "$energy-=10" ],
+			"text": "Tabele, klucze obce, relacje. Przynajmniej w bazie danych relacje są jasno zdefiniowane."
+		},
+		{
+			"id": "project_library", "label": "Pracuj nad projektem na laptopie (2 h)", "loc": "library", "group": "projekt", "cost": 8,
+			"when": [ "project_assigned", "!project_done", "!project_failed" ],
+			"requires": [ { "if": [ "item:laptop" ], "why": "Laptop został w domu." }, { "if": [ "$energy>=15" ], "why": "Nie dasz rady." } ],
+			"effects": [ "add:project_work=1", "$energy-=10" ],
+			"text": "Wi-fi biblioteczne działa co drugą minutę. W międzyczasie piszesz zapytania SQL."
+		},
+		{
+			"id": "project_meeting", "label": "Spotkanie projektowe z Martą", "loc": "library", "group": "projekt", "cost": 6, "limit": "once",
+			"when": [ "npc:marta@here", "project_assigned", "!project_done" ],
+			"requires": [ { "if": [ "$battery>=15" ], "why": "Siadasz dwa stoliki dalej i piszesz do niej na Messengerze. Odpisuje: „Serio?”" } ],
+			"effects": [ "add:project_work=1", "$rel.marta+=10", "$warmth+=5", "$battery-=8" ],
+			"text": { "cold": "Marta mówi szybko i dużo. Ty mówisz mało i konkretnie. Okazuje się, że to dobre połączenie.", "warm": "Marta przyniosła dwie kawy, bo „nie wiedziała, jaką pijesz”. Pijesz obie." }
+		},
+		{
+			"id": "present_project", "label": "Prezentacja projektu", "loc": "uni", "group": "projekt", "cost": 4, "limit": "once",
+			"when": [ "day:fri", "$time>=10:45", "$time<12:30", "project_assigned" ],
+			"effects": [ "set:presented", "$battery-=12" ],
+			"outcomes": [
+				{ "when": [ "project_work>=2", "$battery>=30" ], "effects": [ "set:project_done", "$mood+=12", "$warmth+=3" ], "text": "Mówisz spokojnie. Nikt nie zauważa, że trzęsą ci się ręce. Dr Nowak kiwa głową: „Solidna robota.”" },
+				{ "when": [ "project_work>=2", "$rel.marta>=10" ], "effects": [ "set:project_done", "$warmth+=6", "$rel.marta+=5" ], "text": "Głos ci się łamie na drugim slajdzie. Marta płynnie przejmuje prezentację. Potem: „Dobrze poszło. Serio.”" },
+				{ "when": [ "project_work>=2" ], "effects": [ "set:project_done", "$mood-=4" ], "text": "Zacinasz się, czytasz ze slajdów, ale baza działa. Zaliczone." },
+				{ "when": [], "effects": [ "set:project_failed", "$rel.marta-=10", "$mood-=10" ], "text": "Twoja część to jeden slajd z napisem „TODO”. Marta nie patrzy w twoją stronę." }
+			]
+		},
+		{
+			"id": "colloquium", "label": "Kolokwium z algorytmów", "loc": "uni", "group": "zajęcia", "cost": 6, "limit": "once",
+			"when": [ "day:thu", "$time>=09:30", "$time<=10:30" ],
+			"requires": [ { "if": [ "item:student_id" ], "why": "Dr Nowak sprawdza legitymacje przy wejściu. Twoja leży w szufladzie." } ],
+			"effects": [ "set:took_colloq", "$battery-=6", "$energy-=8" ],
+			"outcomes": [
+				{ "when": [ "study>=3", "!sick" ], "effects": [ "set:colloq_passed", "$mood+=12" ], "text": "Zadanie trzecie to dokładnie to, co liczyłeś wczoraj. Oddajesz pierwszy." },
+				{ "when": [ "study>=2", "!sick" ], "effects": [ "set:colloq_passed", "$mood+=6" ], "text": "Dwa zadania pewne, trzecie na czuja. Wystarczy." },
+				{ "when": [ "study>=2", "sick" ], "effects": [ "set:colloq_failed", "$mood-=10" ], "text": "Głowa jak z waty, nos zatkany. Wiesz, jak to rozwiązać, ale myśli nie składają się w zdania." },
+				{ "when": [ "study>=1", "item:notes" ], "effects": [ "set:colloq_passed" ], "text": "Ściągasz wzór z notatek… nie, nie ściągasz. Ale pamiętasz, gdzie był na stronie. Trzy na szynach." },
+				{ "when": [], "effects": [ "set:colloq_failed", "$mood-=12" ], "text": "Patrzysz na kartkę. Kartka patrzy na ciebie. Po czterdziestu minutach oddajesz ją z imieniem i nazwiskiem." }
+			]
+		},
+		{
+			"id": "vending_coffee", "label": "Kawa z automatu (5 zł)", "loc": "uni", "group": "zakupy", "cost": 1, "limit": "daily",
+			"requires": [ { "if": [ "item:wallet" ], "why": "Portfel został w domu." }, { "if": [ "$money>=5" ], "why": "Nie masz pieniędzy." } ],
+			"effects": [ "$energy+=12", "$money-=5" ],
+			"text": "Smakuje jak tektura w syropie. Działa."
+		},
+		{
+			"id": "talk_kuba_library", "label": "Przysiądź się do Kuby", "loc": "library", "group": "ludzie", "cost": 2, "limit": "daily",
+			"when": [ "npc:kuba@here", "met_kuba" ],
+			"effects": [ "$rel.kuba+=5", "$warmth+=3", "$battery-=4" ],
+			"text": "Kuba studiuje fizjoterapię i ma na stole kościotrupa z plastiku. Przedstawia ci go: „To Stefan.”",
+			"outcomes": [
+				{ "when": [ "!know_room_offer" ], "effects": [ "set:know_room_offer" ], "text": "„A, Ola z twojego bloku szuka współlokatora. Wiesz, ta z trzeciego piętra.”" }
+			]
+		}
+	],
+
+	"rules": [
+		{
+			"id": "marta_phone_assign", "label": "Marta pisze o projekcie",
+			"when": [ "!project_assigned", "day:tue", "$time>=12:00" ],
+			"effects": [ "phone:marta_project|Marta (grupa)|Hej, jesteś w naszej grupie projektowej. Zostały bazy danych – bierzesz? Oddajemy w piątek o 11." ]
+		},
+		{ "id": "assigned_by_phone", "label": "Bierzesz bazy danych", "when": [ "read_marta_project", "!project_assigned" ], "effects": [ "set:project_assigned", "set:known_marta" ] },
+		{
+			"id": "project_missed", "label": "Nieobecność na prezentacji",
+			"when": [ "project_assigned", "day:fri", "$time>=12:30", "!presented" ],
+			"effects": [ "set:project_failed", "$rel.marta-=15", "phone:marta_angry|Marta|Serio? Nie było cię. Prowadzący pytał o twoją część. Musiałam improwizować." ]
+		},
+		{
+			"id": "project_never", "label": "Projekt bez ciebie",
+			"when": [ "!project_assigned", "day:fri", "$time>=12:30" ],
+			"effects": [ "set:project_failed" ]
+		},
+		{
+			"id": "colloq_missed", "label": "Kolokwium bez ciebie",
+			"when": [ "day:thu", "$time>=10:45", "!took_colloq" ],
+			"effects": [ "set:colloq_missed", "$mood-=6" ],
+			"text": "Gdzieś na wydziale dr Nowak zbiera kartki. Twojej nie ma w stosie."
+		}
+	]
+}

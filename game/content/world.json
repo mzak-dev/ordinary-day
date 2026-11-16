@@ -1,0 +1,233 @@
+{
+	// 1 unit = 1 m. Interiors walk at z=-1.2, streets at z=1.6.
+	// Floors of the block are 3 m high; slab top (walk height) = floor*3 + 0.25.
+	"locations": {
+		"room": { "name": "Twój pokój", "battery": 3, "stash": true, "spawn": { "seg": "b2f", "x": 15.0 } },
+		"kitchen": { "name": "Kuchnia", "battery": 0, "spawn": { "seg": "b2f", "x": 7.5 } },
+		"stairwell": { "name": "Klatka schodowa", "battery": -1, "spawn": { "seg": "b0", "x": 5.5 } },
+		"halina": { "name": "Mieszkanie pani Haliny", "battery": -1, "spawn": { "seg": "b1", "x": 6.0 } },
+		"ola_flat": { "name": "Mieszkanie na 3. piętrze", "battery": -2, "spawn": { "seg": "b3", "x": 6.0 } },
+		"osiedle": { "name": "Osiedle", "battery": -1, "outdoor": true, "spawn": { "seg": "street", "x": 6.0 } },
+		"shop": { "name": "Żabka", "battery": -2, "open": "06:00-23:00", "exit_to": "osiedle", "spawn": { "seg": "shop", "x": 27.0 } },
+		"gym": { "name": "Siłownia FitBlok", "battery": -1, "open": "06:00-22:00", "exit_to": "osiedle", "spawn": { "seg": "gym", "x": 39.0 } },
+		"bus_stop": { "name": "Przystanek", "battery": -1, "outdoor": true, "spawn": { "seg": "street", "x": 57.0 } },
+		"park": { "name": "Park", "battery": 1, "outdoor": true, "spawn": { "seg": "street", "x": 72.0 } },
+		"kampus": { "name": "Kampus", "battery": -1, "outdoor": true, "spawn": { "seg": "uni_street", "x": 205.0 } },
+		"uni": { "name": "Wydział", "battery": -2, "open": "07:00-21:00", "exit_to": "kampus", "spawn": { "seg": "uni0", "x": 214.0 } },
+		"library": { "name": "Biblioteka", "battery": 1, "open": "08:00-20:00", "exit_to": "kampus", "spawn": { "seg": "uni1", "x": 215.0 } },
+		"cafe": { "name": "Kawiarnia Ziarno", "battery": -2, "open": "08:00-21:00", "exit_to": "kampus", "spawn": { "seg": "cafe", "x": 241.5 } }
+	},
+
+	"segments": [
+		{ "id": "street", "loc": "osiedle", "x0": -24, "x1": 95, "y": 0.0, "z": 1.6, "outdoor": true },
+		{ "id": "b0", "loc": "stairwell", "x0": 0.5, "x1": 7.5, "y": 0.25, "z": -1.2 },
+		{ "id": "b1s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 3.25, "z": -1.2 },
+		{ "id": "b1", "loc": "halina", "x0": 4.4, "x1": 17.5, "y": 3.25, "z": -1.2 },
+		{ "id": "b2s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 6.25, "z": -1.2 },
+		{ "id": "b2f", "loc": "kitchen", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -1.2 },
+		{ "id": "b3s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 9.25, "z": -1.2 },
+		{ "id": "b3", "loc": "ola_flat", "x0": 4.4, "x1": 17.5, "y": 9.25, "z": -1.2 },
+		{ "id": "shop", "loc": "shop", "x0": 24.5, "x1": 31.5, "y": 0.25, "z": -1.2 },
+		{ "id": "gym", "loc": "gym", "x0": 36.5, "x1": 49.5, "y": 0.25, "z": -1.2 },
+		{ "id": "uni_street", "loc": "kampus", "x0": 195, "x1": 262, "y": 0.0, "z": 1.6, "outdoor": true },
+		{ "id": "uni0", "loc": "uni", "x0": 210.5, "x1": 229.5, "y": 0.25, "z": -1.2 },
+		{ "id": "uni1", "loc": "library", "x0": 210.5, "x1": 229.5, "y": 3.75, "z": -1.2 },
+		{ "id": "cafe", "loc": "cafe", "x0": 238.5, "x1": 249.5, "y": 0.25, "z": -1.2 }
+	],
+
+	"areas": [
+		{ "seg": "b2f", "x0": 11.0, "x1": 18.0, "loc": "room" },
+		{ "seg": "street", "x0": 53.0, "x1": 61.0, "loc": "bus_stop" },
+		{ "seg": "street", "x0": 63.0, "x1": 96.0, "loc": "park" }
+	],
+
+	"links": [
+		{ "id": "block_door", "anim": "door", "door": { "x": 5.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#5d4037", "glass": true }, "a": { "seg": "street", "x": 6.0, "key": "up", "label": "Wejdź do bloku" }, "b": { "seg": "b0", "x": 7.0, "key": "down", "label": "Wyjdź na osiedle" } },
+		{ "id": "stairs01", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -1.95 }, "a": { "seg": "b0", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b1s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
+		{ "id": "stairs12", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -1.95 }, "a": { "seg": "b1s", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b2s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
+		{ "id": "stairs23", "anim": "stairs", "stairs": { "low_x": 2.75, "high_x": 0.55, "z": -1.95 }, "a": { "seg": "b2s", "x": 1.6, "key": "up", "label": "Schody w górę" }, "b": { "seg": "b3s", "x": 1.6, "key": "down", "label": "Schody w dół" } },
+		{
+			"id": "halina_door", "anim": "door", "door": { "x": 4.0, "y": 3.25, "z": -0.8, "facing": "side", "color": "#8d6e63", "swing": 1 }, "requires_from": "a",
+			"a": { "seg": "b1s", "x": 3.2, "key": "up", "label": "Zapukaj do pani Haliny" },
+			"b": { "seg": "b1", "x": 4.8, "key": "up", "label": "Wyjdź na klatkę" },
+			"requires": [ { "if": [ "helped_halina|tea_with_halina|halina_request" ], "why": "Pukasz. Słychać telewizor. Nikt nie otwiera – właściwie to się nie znacie." } ]
+		},
+		{
+			"id": "home_door", "anim": "door", "door": { "x": 4.0, "y": 6.25, "z": -0.8, "facing": "side", "color": "#6d4c41", "swing": 1 }, "requires_from": "a",
+			"a": { "seg": "b2s", "x": 3.2, "key": "up", "label": "Wejdź do mieszkania" },
+			"b": { "seg": "b2f", "x": 4.8, "key": "up", "label": "Wyjdź na klatkę" },
+			"requires": [ { "if": [ "item:keys|npc:mama@kitchen|npc:tata@kitchen" ], "why": "Zamknięte. Klucze zostały w pokoju, a rodziców nie ma." } ]
+		},
+		{
+			"id": "ola_door", "anim": "door", "door": { "x": 4.0, "y": 9.25, "z": -0.8, "facing": "side", "color": "#b08968", "swing": 1 }, "requires_from": "a",
+			"a": { "seg": "b3s", "x": 3.2, "key": "up", "label": "Zapukaj (3. piętro)" },
+			"b": { "seg": "b3", "x": 4.8, "key": "up", "label": "Wyjdź na klatkę" },
+			"requires": [
+				{ "if": [ "party_now|ola_friend" ], "why": "Cisza. Nikt nie otwiera." },
+				{ "if": [ "read_kuba_party|invited_live|ola_friend|knows_ola" ], "why": "Za drzwiami muzyka i śmiech. Nie znasz tam nikogo. Ręka sama opada." }
+			]
+		},
+		{ "id": "shop_door", "anim": "door", "door": { "x": 26.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#2e7d32", "glass": true }, "a": { "seg": "street", "x": 27.0, "key": "up", "label": "Wejdź do Żabki" }, "b": { "seg": "shop", "x": 28.2, "key": "down", "label": "Wyjdź" } },
+		{
+			"id": "gym_door", "anim": "door", "door": { "x": 38.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#37474f", "glass": true }, "requires_from": "a",
+			"a": { "seg": "street", "x": 39.0, "key": "up", "label": "Wejdź na siłownię" },
+			"b": { "seg": "gym", "x": 40.2, "key": "down", "label": "Wyjdź" },
+			"requires": [ { "if": [ "item:gym_pass" ], "why": "Bramka nie przepuści cię bez karnetu. Karnet leży w szufladzie." } ]
+		},
+		{
+			"id": "bus", "anim": "bus",
+			"a": { "seg": "street", "x": 57.0, "key": "up", "label": "Wsiądź do autobusu → kampus (30 min)" },
+			"b": { "seg": "uni_street", "x": 205.0, "key": "up", "label": "Wsiądź do autobusu → osiedle (30 min)" },
+			"cost": 2,
+			"requires": [
+				{ "if": [ "$time>=05:30", "$time<23:00" ], "why": "Ostatni autobus odjechał." },
+				{ "if": [ "item:student_id|item:wallet" ], "why": "Bez legitymacji i portfela nie kupisz biletu." }
+			],
+			"text": { "cold": "Autobus. Czoło przy szybie. Miasto przesuwa się jak tapeta.", "warm": "Autobus. Ktoś obok śmieje się do telefonu i łapiesz się na tym, że też się uśmiechasz." }
+		},
+		{ "id": "uni_door", "anim": "door", "door": { "x": 212.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#5d4037", "glass": true }, "a": { "seg": "uni_street", "x": 213.0, "key": "up", "label": "Wejdź na wydział" }, "b": { "seg": "uni0", "x": 214.2, "key": "down", "label": "Wyjdź" } },
+		{ "id": "uni_stairs", "anim": "stairs", "stairs": { "low_x": 212.8, "high_x": 210.6, "z": -1.95 }, "a": { "seg": "uni0", "x": 211.5, "key": "up", "label": "Schody do biblioteki" }, "b": { "seg": "uni1", "x": 211.5, "key": "down", "label": "Schody w dół" } },
+		{ "id": "cafe_door", "anim": "door", "door": { "x": 240.5, "y": 0.25, "z": -0.15, "facing": "front", "color": "#4e342e", "glass": true }, "a": { "seg": "uni_street", "x": 241.0, "key": "up", "label": "Wejdź do kawiarni" }, "b": { "seg": "cafe", "x": 242.2, "key": "down", "label": "Wyjdź" } }
+	],
+
+	"streets": [
+		{ "x0": -30, "x1": 100 },
+		{ "x0": 190, "x1": 268 }
+	],
+
+	"buildings": [
+		{
+			"id": "blok", "x0": 0, "x1": 18, "floors": 4, "floor_h": 3.0, "z0": -3.5, "z1": 0.0,
+			"open": "always", "roof_details": true, "stair_hole": { "x0": 0.25, "x1": 2.9 }, "wall": "#b8b0a0", "facade": "#d4ccb8", "accent": "#7d9bb0",
+			"doors": [ 6.0 ],
+			"partitions": [ { "floor": 0, "x": 8, "door": false }, { "floor": 1, "x": 4 }, { "floor": 2, "x": 4 }, { "floor": 2, "x": 11 }, { "floor": 3, "x": 4 } ],
+			"rooms": [
+				{ "floor": 0, "x0": 0, "x1": 8, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
+				{ "floor": 0, "x0": 8, "x1": 18, "wall": "#77716a", "floor_col": "#4c4945", "floor_kind": "plain", "light": "", "window": false },
+				{ "floor": 1, "x0": 0, "x1": 4, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
+				{ "floor": 1, "x0": 4, "x1": 18, "wall": "#c9a98a", "low": "#a8866a", "floor_col": "#8a5a3c", "light": "#ffcf8a" },
+				{ "floor": 2, "x0": 0, "x1": 4, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
+				{ "floor": 2, "x0": 4, "x1": 11, "wall": "#ddd6bb", "low": "#9fb7a8", "floor_col": "#a39a8c", "floor_kind": "tiles", "light": "#ffe0a0" },
+				{ "floor": 2, "x0": 11, "x1": 18, "wall": "#46506b", "floor_col": "#5b4a3d", "light": "#a8c0ff" },
+				{ "floor": 3, "x0": 0, "x1": 4, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
+				{ "floor": 3, "x0": 4, "x1": 18, "wall": "#d9a7a0", "floor_col": "#9c7b5a", "light": "#ffb0d0" }
+			]
+		},
+		{
+			"id": "zabka", "x0": 24, "x1": 32, "floors": 1, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"open": "shop", "wall": "#e8e4da", "facade": "#2e7d32", "accent": "#a5d6a7",
+			"sign": "ŻABKA", "sign_color": "#7cb342", "doors": [ 27.0 ],
+			"rooms": [ { "floor": 0, "x0": 24, "x1": 32, "wall": "#f2f2ee", "floor_col": "#c8c8c0", "floor_kind": "tiles", "light": "#f0fff0" } ]
+		},
+		{
+			"id": "silownia", "x0": 36, "x1": 50, "floors": 1, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"open": "gym", "wall": "#6d7378", "facade": "#37474f", "accent": "#ff7043",
+			"sign": "FITBLOK", "sign_color": "#ff7043", "doors": [ 39.0 ],
+			"rooms": [ { "floor": 0, "x0": 36, "x1": 50, "wall": "#9ea3a6", "low": "#2f3438", "floor_col": "#3a3a3a", "floor_kind": "plain", "light": "#e0f0ff" } ]
+		},
+		{
+			"id": "wydzial", "x0": 210, "x1": 230, "floors": 2, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"open": "uni", "stair_hole": { "x0": 210.25, "x1": 213.0 }, "wall": "#8d7f74", "facade": "#a1887f", "accent": "#d7ccc8",
+			"sign": "WYDZIAŁ INFORMATYKI", "sign_color": "#eeeeee", "doors": [ 213.0 ],
+			"rooms": [
+				{ "floor": 0, "x0": 210, "x1": 230, "wall": "#d7ccc8", "low": "#8d6e63", "floor_col": "#9e9488", "floor_kind": "tiles", "light": "#fff3d6" },
+				{ "floor": 1, "x0": 210, "x1": 230, "wall": "#c5b39b", "floor_col": "#6d4c41", "light": "#ffe0b0" }
+			]
+		},
+		{
+			"id": "ziarno", "x0": 238, "x1": 250, "floors": 1, "floor_h": 3.5, "z0": -3.5, "z1": 0.0,
+			"open": "cafe", "wall": "#6d4c41", "facade": "#5d4037", "accent": "#ffcc80",
+			"sign": "ZIARNO", "sign_color": "#ffcc80", "doors": [ 241.0 ],
+			"rooms": [ { "floor": 0, "x0": 238, "x1": 250, "wall": "#efd9b4", "low": "#8d6e63", "floor_col": "#8d6e63", "light": "#ffcf8a" } ]
+		}
+	],
+
+	"props": [
+		{ "vox": "stairs", "x": 1.6, "y": 0.25, "z": -2.6 },
+		{ "vox": "stairs", "x": 1.6, "y": 3.25, "z": -2.6 },
+		{ "vox": "stairs", "x": 1.6, "y": 6.25, "z": -2.6 },
+		{ "vox": "mailboxes", "x": 6.9, "y": 0.25, "z": -3.2 },
+		{ "vox": "bike", "x": 4.6, "y": 0.25, "z": -2.6 },
+
+		{ "vox": "armchair", "x": 9.0, "y": 3.25, "z": -2.6 },
+		{ "vox": "tv_old", "x": 6.4, "y": 3.25, "z": -2.9 },
+		{ "vox": "cabinet", "x": 13.5, "y": 3.25, "z": -3.0 },
+		{ "vox": "plant", "x": 16.6, "y": 3.25, "z": -2.8 },
+		{ "vox": "cat", "x": 11.2, "y": 3.25, "z": -2.0 },
+
+		{ "vox": "fridge", "x": 5.0, "y": 6.25, "z": -2.9 },
+		{ "vox": "counter", "x": 6.4, "y": 6.25, "z": -3.0 },
+		{ "vox": "stove", "x": 7.6, "y": 6.25, "z": -3.0 },
+		{ "vox": "table", "x": 9.3, "y": 6.25, "z": -2.3 },
+		{ "vox": "chair", "x": 8.4, "y": 6.25, "z": -2.3 },
+		{ "vox": "chair", "x": 10.2, "y": 6.25, "z": -2.3 },
+		{ "vox": "desk_pc", "x": 12.4, "y": 6.25, "z": -2.9 },
+		{ "vox": "wardrobe", "x": 14.3, "y": 6.25, "z": -3.0 },
+		{ "vox": "bed", "x": 16.4, "y": 6.25, "z": -2.5 },
+		{ "vox": "poster", "x": 15.2, "y": 7.8, "z": -3.3 },
+
+		{ "vox": "sofa", "x": 10.5, "y": 9.25, "z": -2.7 },
+		{ "vox": "speaker", "x": 7.2, "y": 9.25, "z": -2.9 },
+		{ "vox": "bookshelf", "x": 14.0, "y": 9.25, "z": -3.0 },
+		{ "vox": "plant", "x": 16.8, "y": 9.25, "z": -2.8 },
+		{ "vox": "boxes", "x": 5.6, "y": 9.25, "z": -2.8 },
+
+		{ "vox": "shop_shelf", "x": 25.6, "y": 0.25, "z": -3.0 },
+		{ "vox": "shop_shelf", "x": 27.9, "y": 0.25, "z": -3.0 },
+		{ "vox": "drinks_fridge", "x": 29.4, "y": 0.25, "z": -3.0 },
+		{ "vox": "shop_counter", "x": 30.6, "y": 0.25, "z": -2.4 },
+
+		{ "vox": "treadmill", "x": 41.0, "y": 0.25, "z": -2.6 },
+		{ "vox": "treadmill", "x": 42.8, "y": 0.25, "z": -2.6 },
+		{ "vox": "bench_press", "x": 45.4, "y": 0.25, "z": -2.4 },
+		{ "vox": "weight_rack", "x": 48.0, "y": 0.25, "z": -3.0 },
+
+		{ "vox": "stairs_tall", "x": 211.6, "y": 0.25, "z": -2.6 },
+		{ "vox": "board", "x": 225.6, "y": 1.2, "z": -3.3 },
+		{ "vox": "lecture_desk", "x": 216.5, "y": 0.25, "z": -2.3 },
+		{ "vox": "lecture_desk", "x": 219.5, "y": 0.25, "z": -2.3 },
+		{ "vox": "lecture_desk", "x": 225.5, "y": 0.25, "z": -2.3 },
+		{ "vox": "lecture_desk", "x": 228.0, "y": 0.25, "z": -2.3 },
+		{ "vox": "vending", "x": 214.8, "y": 0.25, "z": -3.0 },
+		{ "vox": "bookshelf", "x": 214.0, "y": 3.75, "z": -3.0 },
+		{ "vox": "bookshelf", "x": 216.0, "y": 3.75, "z": -3.0 },
+		{ "vox": "bookshelf", "x": 226.5, "y": 3.75, "z": -3.0 },
+		{ "vox": "bookshelf", "x": 228.5, "y": 3.75, "z": -3.0 },
+		{ "vox": "table", "x": 221.0, "y": 3.75, "z": -2.3 },
+		{ "vox": "chair", "x": 220.0, "y": 3.75, "z": -2.3 },
+		{ "vox": "chair", "x": 222.0, "y": 3.75, "z": -2.3 },
+
+		{ "vox": "cafe_counter", "x": 247.2, "y": 0.25, "z": -2.6 },
+		{ "vox": "coffee_machine", "x": 248.6, "y": 1.35, "z": -2.9 },
+		{ "vox": "table", "x": 243.0, "y": 0.25, "z": -2.3 },
+		{ "vox": "chair", "x": 242.1, "y": 0.25, "z": -2.3 },
+		{ "vox": "plant", "x": 239.2, "y": 0.25, "z": -2.9 },
+
+		{ "vox": "tree", "x": -19.0, "y": 0.0, "z": -2.0 },
+		{ "vox": "tree", "x": -9.0, "y": 0.0, "z": -1.5 },
+		{ "vox": "lamp", "x": -4.0, "y": 0.0, "z": 0.5 },
+		{ "vox": "bench", "x": -12.0, "y": 0.0, "z": 0.4 },
+		{ "vox": "trash", "x": 9.5, "y": 0.0, "z": 0.6 },
+		{ "vox": "tree", "x": 21.0, "y": 0.0, "z": -1.8 },
+		{ "vox": "lamp", "x": 33.5, "y": 0.0, "z": 0.5 },
+		{ "vox": "tree", "x": 52.0, "y": 0.0, "z": -1.8 },
+		{ "vox": "bus_shelter", "x": 57.0, "y": 0.0, "z": -0.3 },
+		{ "vox": "tree", "x": 65.0, "y": 0.0, "z": -2.2 },
+		{ "vox": "tree", "x": 69.5, "y": 0.0, "z": -4.0 },
+		{ "vox": "bench", "x": 71.0, "y": 0.0, "z": 0.4 },
+		{ "vox": "lamp", "x": 74.0, "y": 0.0, "z": 0.5 },
+		{ "vox": "tree", "x": 77.0, "y": 0.0, "z": -1.6 },
+		{ "vox": "bench", "x": 81.0, "y": 0.0, "z": 0.4 },
+		{ "vox": "tree", "x": 84.0, "y": 0.0, "z": -3.5 },
+		{ "vox": "tree", "x": 89.0, "y": 0.0, "z": -1.8 },
+		{ "vox": "tree", "x": 93.5, "y": 0.0, "z": -3.0 },
+
+		{ "vox": "bus_shelter", "x": 205.0, "y": 0.0, "z": -0.3 },
+		{ "vox": "tree", "x": 199.0, "y": 0.0, "z": -1.8 },
+		{ "vox": "lamp", "x": 208.0, "y": 0.0, "z": 0.5 },
+		{ "vox": "tree", "x": 234.0, "y": 0.0, "z": -1.8 },
+		{ "vox": "bench", "x": 235.0, "y": 0.0, "z": 0.4 },
+		{ "vox": "lamp", "x": 252.0, "y": 0.0, "z": 0.5 },
+		{ "vox": "tree", "x": 256.0, "y": 0.0, "z": -2.0 }
+	]
+}
