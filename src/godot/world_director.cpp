@@ -63,6 +63,7 @@ void WorldDirector::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_segment", "id"), &WorldDirector::get_segment);
 	ClassDB::bind_method(D_METHOD("get_link_def", "id"), &WorldDirector::get_link_def);
+	ClassDB::bind_method(D_METHOD("get_passages"), &WorldDirector::get_passages);
 	ClassDB::bind_method(D_METHOD("find_links", "seg", "x", "radius"), &WorldDirector::find_links, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("set_door_open", "link_id", "open"), &WorldDirector::set_door_open);
 	ClassDB::bind_method(D_METHOD("refresh"), &WorldDirector::refresh);
@@ -440,6 +441,21 @@ void WorldDirector::build_props() {
 		add_child(mi);
 		mi->set_mesh(mesh);
 		mi->set_position(pos);
+		for (CutawayBuilding *b : buildings_) {
+			if (!b->has_back() || pos.x < b->get_x0() || pos.x > b->get_x1()) {
+				continue;
+			}
+			double dz = double(pos.z) - b->get_back_z();
+			if (dz >= 0.0 && double(pos.z) < 0.0) { // everything in the front layer of the block
+				WallProp w;
+				w.mesh = mi;
+				w.mat = make_voxel_material();
+				w.building = b;
+				w.floor = int(std::floor(double(pos.y) / b->get_floor_h() + 0.001));
+				mi->set_material_override(w.mat);
+				wall_props_.push_back(w);
+			}
+		}
 		if (name == "lamp") {
 			SpotLight3D *l = memnew(SpotLight3D);
 			add_child(l);
@@ -667,11 +683,19 @@ void WorldDirector::_process(double delta) {
 		if (!a.root->is_visible()) {
 			continue;
 		}
-		a.sprite->set_modulate(Color(1, 1, 1, a.alpha));
 		Vector3 p = a.root->get_global_position();
+		// When the player is in a back room, people standing in front of it fade out too.
+		float ghost = 1.0f;
+		for (CutawayBuilding *b : buildings_) {
+			if (b->has_back() && pp.z < b->get_back_z() + 0.15 && p.z > b->get_back_z() && std::fabs(p.y - pp.y) < 1.0f &&
+					p.x >= b->get_x0() && p.x <= b->get_x1()) {
+				ghost = 0.3f;
+			}
+		}
+		a.sprite->set_modulate(Color(1, 1, 1, a.alpha * ghost));
 		float dx = pp.x - p.x;
 		bool near = std::fabs(dx) < 4.0f && std::fabs(pp.y - p.y) < 1.5f;
-		a.label->set_visible(near && a.alpha > 0.5f);
+		a.label->set_visible(near && a.alpha > 0.5f && ghost > 0.5f);
 		if (near) {
 			a.sprite->set_flip_h(dx < 0);
 		}
@@ -685,6 +709,23 @@ void WorldDirector::_process(double delta) {
 			bool inside = pp.z < 0.5f && pp.x >= b->get_x0() && pp.x <= b->get_x1();
 			if (inside && !b->is_cutaway()) {
 				b->set_cutaway(true);
+			}
+			// In a back room: dissolve the wall in front of it on that floor.
+			int floor = -1;
+			if (b->has_back() && inside && pp.z < b->get_back_z() + 0.15) {
+				floor = int(std::floor(double(pp.y) / b->get_floor_h() + 0.001));
+			}
+			b->set_inner_open(floor);
+			for (WallProp &w : wall_props_) {
+				if (w.building != b) {
+					continue;
+				}
+				float target = w.floor == floor ? 0.0f : 1.0f;
+				if (std::fabs(w.alpha - target) > 0.001f) {
+					float step = float(delta) * 3.0f;
+					w.alpha = w.alpha < target ? std::min(target, w.alpha + step) : std::max(target, w.alpha - step);
+					w.mat->set_shader_parameter("fade", std::max(0.12f, w.alpha));
+				}
 			}
 		}
 	}

@@ -384,6 +384,57 @@ void CutawayBuilding::configure(const Dictionary &def) {
 		}
 	}
 
+	// ------------------------------------------------------------ inner walls
+	// The wall in front of the back layer goes into its own mesh per floor so
+	// it can dissolve when the player walks into a back room.
+	has_back_ = has_back;
+	back_z_ = has_back ? z0 + Bz * kVs : 0.0;
+	floor_h_ = floor_h;
+	if (has_back) {
+		std::vector<bool> part_col(size_t(W) * size_t(floors), false);
+		for (int64_t i = 0; i < parts.size(); ++i) {
+			Dictionary p = parts[i];
+			int f = int(p.get("floor", 0));
+			int px = V(double(p.get("x", x0_)) - x0_);
+			for (int x = px - 1; x <= px; ++x) {
+				if (x >= 0 && x < W && f >= 0 && f < floors) {
+					part_col[size_t(f) * W + x] = true;
+				}
+			}
+		}
+		for (int f = 0; f < floors; ++f) {
+			VoxelGrid ig;
+			ig.resize(W, H, Ds);
+			bool any = false;
+			const int yb = f * FH;
+			for (int x = 2; x < W - 2; ++x) {
+				const Room *b = back_at(f, x);
+				if (!b || b->open || part_col[size_t(f) * W + x]) {
+					continue;
+				}
+				for (int y = yb + 2; y < yb + FH; ++y) {
+					for (int z = Bz - 1; z <= Bz + 2; ++z) {
+						uint32_t c = g.get(x, y, z);
+						if (c) {
+							ig.set(x, y, z, c);
+							g.set(x, y, z, 0u);
+							any = true;
+						}
+					}
+				}
+			}
+			Inner in;
+			if (any) {
+				in.mesh = memnew(MeshInstance3D);
+				add_child(in.mesh);
+				in.mesh->set_mesh(build_voxel_mesh(ig, kVs, Vector3(float(x0_), 0.0f, float(z0)), 0.07f));
+				in.mat = make_voxel_material();
+				in.mesh->set_material_override(in.mat);
+			}
+			inner_.push_back(in);
+		}
+	}
+
 	shell_ = memnew(MeshInstance3D);
 	add_child(shell_);
 	Ref<ArrayMesh> shell_mesh = build_voxel_mesh(g, kVs, Vector3(float(x0_), 0.0f, float(z0)), 0.07f);
@@ -533,7 +584,22 @@ void CutawayBuilding::set_light_shadows(bool enabled) {
 	}
 }
 
+void CutawayBuilding::set_inner_open(int floor) {
+	for (size_t f = 0; f < inner_.size(); ++f) {
+		inner_[f].target = int(f) == floor ? 0.0f : 1.0f;
+	}
+}
+
 void CutawayBuilding::_process(double delta) {
+	for (Inner &in : inner_) {
+		if (!in.mesh || std::fabs(in.alpha - in.target) < 0.001f) {
+			continue;
+		}
+		float step = float(delta) * 3.0f;
+		in.alpha = in.alpha < in.target ? std::min(in.target, in.alpha + step) : std::max(in.target, in.alpha - step);
+		in.mat->set_shader_parameter("fade", std::max(0.12f, in.alpha));
+		in.mesh->set_cast_shadows_setting(in.alpha > 0.5f ? GeometryInstance3D::SHADOW_CASTING_SETTING_ON : GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+	}
 	if (std::fabs(alpha_ - target_alpha_) < 0.001f) {
 		return;
 	}

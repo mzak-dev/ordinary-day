@@ -27,6 +27,12 @@ public:
 	bool is_cutaway() const { return target_alpha_ < 0.5f; }
 	void set_light_level(float level);
 	void set_light_shadows(bool enabled);
+	// Fades the wall between the walkable rooms and the back layer on one
+	// floor (-1 = none), so the player stays visible in a back room.
+	void set_inner_open(int floor);
+	bool has_back() const { return has_back_; }
+	double get_back_z() const { return back_z_; }
+	double get_floor_h() const { return floor_h_; }
 
 	String get_open_loc() const { return open_loc_; }
 	double get_x0() const { return x0_; }
@@ -44,6 +50,14 @@ private:
 	double x0_ = 0, x1_ = 0;
 	float alpha_ = 1.0f;
 	float target_alpha_ = 1.0f;
+	bool has_back_ = false;
+	double back_z_ = 0.0, floor_h_ = 3.0;
+	struct Inner {
+		MeshInstance3D *mesh = nullptr;
+		Ref<ShaderMaterial> mat;
+		float alpha = 1.0f, target = 1.0f;
+	};
+	std::vector<Inner> inner_;
 
 	void apply_alpha();
 };

@@ -8,12 +8,16 @@
 #include <godot_cpp/classes/sprite3d.hpp>
 
 #include <deque>
+#include <vector>
 #include <functional>
 
 namespace godot {
 
-// Side-scrolling movement along walk segments. W/S use doors, stairs and the
-// bus — each with its own little animation. Drives the camera too.
+// Movement along walk segments: A/D walk sideways, W/S walk back and forth
+// inside the segment's depth band ("depth" in world.json) and through
+// "passages" into rooms behind. Standing on the segment's walk line next to a
+// door, stairs or the bus, W/S use them instead, each with its own little
+// animation. Drives the camera too.
 class PlayerController : public Node3D {
 	GDCLASS(PlayerController, Node3D)
 
@@ -64,6 +68,12 @@ private:
 
 	String seg_;
 	double x_ = 0, y_ = 0, z_ = 0, x0_ = 0, x1_ = 0;
+	// Depth band of the current segment and its walk line (where links start).
+	double zline_ = 0, zmin_ = 0, zmax_ = 0;
+	struct Wall {
+		double x = 0, g0 = 0, g1 = 0; // wall at x, passable for z in [g0, g1]
+	};
+	std::vector<Wall> walls_;
 	Vector3 vpos_; // visual position (differs from logical during animations)
 	double speed_ = 3.6;
 	bool input_enabled_ = true;
@@ -93,6 +103,9 @@ private:
 	void commit_link(const String &id, bool from_a);
 	Vector3 end_position(const Dictionary &link, bool a_side) const;
 	void sync_from_sim();
+	void load_segment(const Dictionary &s);
+	bool near_line() const;
+	void walk(double dx, double dz, double delta);
 };
 
 } // namespace godot

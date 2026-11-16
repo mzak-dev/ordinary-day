@@ -1,9 +1,13 @@
 {
-	// 1 unit = 1 m. Interiors walk at z=-1.2, streets at z=1.6.
+	// 1 unit = 1 m. Interiors walk at z=-1.2, streets at z=1.6 (the walk line: doors and stairs start there).
+	// "depth" = how far back/forward W/S can walk; "walls" block sideways walking except in their gap;
+	// "passages" join a front segment (a) and a back one (b) through a doorway.
 	// Floors of the block are 3 m high; slab top (walk height) = floor*3 + 0.25.
 	"locations": {
 		"room": { "name": "Twój pokój", "battery": 3, "stash": true, "spawn": { "seg": "b2f", "x": 15.0 } },
 		"kitchen": { "name": "Kuchnia", "battery": 0, "spawn": { "seg": "b2f", "x": 7.5 } },
+		"salon": { "name": "Salon", "battery": 0, "spawn": { "seg": "b2b", "x": 12.0 } },
+		"bathroom": { "name": "Łazienka", "battery": 2, "spawn": { "seg": "b2b", "x": 6.0 } },
 		"stairwell": { "name": "Klatka schodowa", "battery": -1, "spawn": { "seg": "b0", "x": 5.5 } },
 		"halina": { "name": "Mieszkanie pani Haliny", "battery": -1, "spawn": { "seg": "b1", "x": 6.0 } },
 		"ola_flat": { "name": "Mieszkanie na 3. piętrze", "battery": -2, "spawn": { "seg": "b3", "x": 6.0 } },
@@ -19,26 +23,33 @@
 	},
 
 	"segments": [
-		{ "id": "street", "loc": "osiedle", "x0": -24, "x1": 95, "y": 0.0, "z": 1.6, "outdoor": true },
-		{ "id": "b0", "loc": "stairwell", "x0": 0.5, "x1": 7.5, "y": 0.25, "z": -1.2 },
-		{ "id": "b1s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 3.25, "z": -1.2 },
-		{ "id": "b1", "loc": "halina", "x0": 4.4, "x1": 17.5, "y": 3.25, "z": -1.2 },
-		{ "id": "b2s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 6.25, "z": -1.2 },
-		{ "id": "b2f", "loc": "kitchen", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -1.2 },
-		{ "id": "b3s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 9.25, "z": -1.2 },
-		{ "id": "b3", "loc": "ola_flat", "x0": 4.4, "x1": 17.5, "y": 9.25, "z": -1.2 },
-		{ "id": "shop", "loc": "shop", "x0": 24.5, "x1": 31.5, "y": 0.25, "z": -1.2 },
-		{ "id": "gym", "loc": "gym", "x0": 36.5, "x1": 49.5, "y": 0.25, "z": -1.2 },
-		{ "id": "uni_street", "loc": "kampus", "x0": 195, "x1": 262, "y": 0.0, "z": 1.6, "outdoor": true },
-		{ "id": "uni0", "loc": "uni", "x0": 210.5, "x1": 229.5, "y": 0.25, "z": -1.2 },
-		{ "id": "uni1", "loc": "library", "x0": 210.5, "x1": 229.5, "y": 3.75, "z": -1.2 },
-		{ "id": "cafe", "loc": "cafe", "x0": 238.5, "x1": 249.5, "y": 0.25, "z": -1.2 }
+		{ "id": "street", "loc": "osiedle", "x0": -24, "x1": 95, "y": 0.0, "z": 1.6, "depth": [ 0.4, 2.8 ], "outdoor": true },
+		{ "id": "b0", "loc": "stairwell", "x0": 0.5, "x1": 7.5, "y": 0.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b1s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 3.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b1", "loc": "halina", "x0": 4.4, "x1": 17.5, "y": 3.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "b2s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 6.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b2f", "loc": "kitchen", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -1.2, "depth": [ -3.6, -0.6 ], "walls": [ { "x": 11.0, "gap": [ -1.9, -0.8 ] } ] },
+		{ "id": "b2b", "loc": "salon", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -6.3, "depth": [ -7.0, -5.6 ], "walls": [ { "x": 7.75, "gap": [ -7.05, -5.95 ] } ] },
+		{ "id": "b3s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 9.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b3", "loc": "ola_flat", "x0": 4.4, "x1": 17.5, "y": 9.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "shop", "loc": "shop", "x0": 24.5, "x1": 31.5, "y": 0.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "gym", "loc": "gym", "x0": 36.5, "x1": 49.5, "y": 0.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "uni_street", "loc": "kampus", "x0": 195, "x1": 262, "y": 0.0, "z": 1.6, "depth": [ 0.4, 2.8 ], "outdoor": true },
+		{ "id": "uni0", "loc": "uni", "x0": 210.5, "x1": 229.5, "y": 0.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "uni1", "loc": "library", "x0": 210.5, "x1": 229.5, "y": 3.75, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "cafe", "loc": "cafe", "x0": 238.5, "x1": 249.5, "y": 0.25, "z": -1.2, "depth": [ -3.6, -0.6 ] }
 	],
 
 	"areas": [
 		{ "seg": "b2f", "x0": 11.0, "x1": 18.0, "loc": "room" },
+		{ "seg": "b2b", "x0": 4.0, "x1": 7.75, "loc": "bathroom" },
 		{ "seg": "street", "x0": 53.0, "x1": 61.0, "loc": "bus_stop" },
 		{ "seg": "street", "x0": 63.0, "x1": 96.0, "loc": "park" }
+	],
+
+	"passages": [
+		{ "a": "b2f", "b": "b2b", "x0": 9.95, "x1": 10.8, "z": -4.9 },
+		{ "a": "b2f", "b": "b2b", "x0": 13.05, "x1": 13.95, "z": -4.9 }
 	],
 
 	"links": [
@@ -194,15 +205,17 @@
 
 		{ "vox": "flat_hall_wall", "vs": 0.05, "x": 12.8, "y": 6.25, "z": -7.725 },
 		{ "vox": "hall_chandelier", "vs": 0.05, "x": 12.75, "y": 8.45, "z": -6.5 },
-		{ "vox": "hall_painting6_castle", "vs": 0.05, "x": 9.6, "y": 7.9, "z": -7.675 },
-		{ "vox": "hall_commode", "vs": 0.05, "x": 9.6, "y": 6.25, "z": -7.525 },
-		{ "vox": "hall_flowerpot", "vs": 0.05, "x": 9.0, "y": 7.4, "z": -7.6 },
-		{ "vox": "hall_familyphoto", "vs": 0.05, "x": 10.3, "y": 7.4, "z": -7.65 },
-		{ "vox": "hall_door3_bathroom", "vs": 0.05, "x": 12.0, "y": 6.25, "z": -7.7 },
-		{ "vox": "hall_shoes_shelf", "vs": 0.05, "x": 14.6, "y": 6.25, "z": -7.575 },
-		{ "vox": "hall_shoes", "vs": 0.05, "x": 14.6, "y": 6.3, "z": -7.45 },
-		{ "vox": "hall_painting7_sunset", "vs": 0.05, "x": 14.6, "y": 7.6, "z": -7.675 },
-		{ "vox": "hall_door2_kitchen", "vs": 0.05, "x": 16.75, "y": 6.25, "z": -7.7 },
+		{ "vox": "hall_shoes_shelf", "vs": 0.05, "x": 8.85, "y": 6.25, "z": -7.575 },
+		{ "vox": "hall_shoes", "vs": 0.05, "x": 8.85, "y": 6.3, "z": -7.45 },
+		{ "vox": "hall_painting7_sunset", "vs": 0.05, "x": 8.85, "y": 7.6, "z": -7.675 },
+		{ "vox": "hall_commode", "vs": 0.05, "x": 11.0, "y": 6.25, "z": -7.525 },
+		{ "vox": "tv_old", "x": 13.3, "y": 6.25, "z": -7.35 },
+		{ "vox": "hall_flowerpot", "vs": 0.05, "x": 12.0, "y": 7.4, "z": -7.6 },
+		{ "vox": "hall_familyphoto", "vs": 0.05, "x": 10.1, "y": 7.4, "z": -7.65 },
+		{ "vox": "sofa", "x": 15.6, "y": 6.25, "z": -7.25 },
+		{ "vox": "hall_painting6_castle", "vs": 0.05, "x": 15.6, "y": 7.75, "z": -7.675 },
+		{ "vox": "armchair", "x": 17.1, "y": 6.25, "z": -6.9 },
+		{ "vox": "plant", "x": 14.25, "y": 6.25, "z": -7.4 },
 
 		{ "vox": "sofa", "x": 10.5, "y": 9.25, "z": -4.2 },
 		{ "vox": "speaker", "x": 7.2, "y": 9.25, "z": -4.4 },
