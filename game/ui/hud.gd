@@ -104,6 +104,14 @@ var last_loc := ""
 var last_action_ids: Array = []
 var first_refresh := true
 var npc_actions := {}  # npc id -> first action label
+# Interaction with things and people right next to the player (replaces the E menu
+# for everything tied to an object or a person).
+var focus := {}             # {key, name, pos, acts: Array[Dictionary]}
+var focus_sel := 0
+var focus_card: PanelContainer
+var focus_sig := ""
+var attached := {}          # action ids that live on a prop
+var interactables: Array = []
 var phone_seen := 0
 
 
@@ -564,7 +572,8 @@ func _build_help(root: Control) -> void:
 	grid.add_theme_constant_override("h_separation", 16)
 	grid.add_theme_constant_override("v_separation", 8)
 	hv.add_child(grid)
-	for row in [["A  D", "chodzenie"], ["W  S", "drzwi, schody, autobus"], ["E", "co robisz w tym miejscu (akcje zjadają czas)"],
+	for row in [["A  D", "chodzenie w bok"], ["W  S", "w głąb i do przodu; przy drzwiach i schodach – przejście"], ["Shift", "sprint"],
+			["E", "użyj tego, przy czym stoisz (akcje zjadają czas); gdzie indziej – inne akcje"], ["F", "następna opcja na karcie"],
 			["Q", "szuflada w twoim pokoju – 6 kieszeni, wybieraj mądrze"], ["P", "telefon – wiadomości przychodzą, gdy go masz"],
 			["1–6", "slot ekwipunku"], ["F5  F9", "zapis / wczytanie"], ["Esc", "menu"]]:
 		var keys := HBoxContainer.new()
@@ -792,6 +801,8 @@ func _update_hints(loc: String) -> void:
 	# new possibilities that appear while you're standing in the same place.
 	var ids: Array = []
 	var meaningful := 0
+	var general := 0  # what's left for the E menu (not on a thing or a person)
+	_ensure_interactables()
 	npc_actions.clear()
 	var npc_cost := {}
 	var labels := {}
@@ -799,6 +810,8 @@ func _update_hints(loc: String) -> void:
 		if not a.enabled:
 			continue
 		labels[a.id] = a.label
+		if not attached.has(String(a.id)) and a.npcs.is_empty():
+			general += 1
 		if a.group in QUIET_GROUPS:
 			continue
 		meaningful += 1
@@ -810,7 +823,7 @@ func _update_hints(loc: String) -> void:
 			if not npc_actions.has(n) or int(a.cost) > int(npc_cost[n]):
 				npc_actions[n] = a.label
 				npc_cost[n] = a.cost
-	hint_actions.text = "Akcje (%d)" % meaningful if meaningful > 0 else "Akcje"
+	hint_actions.text = "Inne (%d)" % general if general > 0 else "Inne"
 	hint_stash.visible = sim.can_use_stash()
 	var unread := sim.get_phone_log().size() - phone_seen
 	var badge: Control = hint_phone_badge.get_parent()
@@ -838,11 +851,9 @@ func _show_banner(title: String, count: int) -> void:
 	if count == 0:
 		banner_sub.text = ""
 	elif count == 1:
-		banner_sub.text = "Jedna rzecz do zrobienia  ·  E"
-	elif count < 5:
-		banner_sub.text = "%d rzeczy do zrobienia  ·  E" % count
+		banner_sub.text = "Jedna rzecz do zrobienia  ·  podejdź i naciśnij E"
 	else:
-		banner_sub.text = "%d rzeczy do zrobienia  ·  E" % count
+		banner_sub.text = "%d rzeczy do zrobienia  ·  podejdź i naciśnij E" % count
 	var tw := create_tween()
 	tw.tween_property(banner, "modulate:a", 1.0, 0.25)
 	tw.tween_interval(1.8)
@@ -932,6 +943,8 @@ func _collect_prompts() -> Dictionary:
 			"order": (1 if up else 0) if anim == "stairs" else 2,
 		}
 	for id in npc_actions:
+		if true:
+			continue  # people now get the focus card instead
 		var a: Dictionary = world.get_npc_anchor(id)
 		if not a.visible:
 			continue
@@ -1032,6 +1045,164 @@ func _notice(text: String) -> void:
 	notice_time = 4.0
 
 
+func _ensure_interactables() -> void:
+	if not interactables.is_empty() or world == null:
+		return
+	interactables = world.get_interactables()
+	for it in interactables:
+		for id in it.acts:
+			attached[String(id)] = true
+
+
+## The thing or person the player is standing at, with what can be done there now.
+func _find_focus() -> Dictionary:
+	_ensure_interactables()
+	var by_id := {}
+	for a in sim.get_actions():
+		by_id[String(a.id)] = a
+	var pp: Vector3 = player.global_position
+	var best := {}
+	var best_d := 1e9
+	for it in interactables:
+		var acts: Array = []
+		for id in it.acts:
+			if by_id.has(String(id)):
+				acts.append(by_id[String(id)])
+		if acts.is_empty():
+			continue
+		var pos: Vector3 = it.pos
+		if pos.y < pp.y or pos.y - pp.y > 3.2:
+			continue
+		var dx := absf(pos.x - pp.x)
+		var dz := absf(pos.z - pp.z)
+		if dx > 1.4 or dz > 3.2:
+			continue
+		var d := dx + 0.25 * dz
+		if d < best_d:
+			best_d = d
+			best = {"key": "prop:%d" % int(it.index), "index": int(it.index), "name": String(it.name), "pos": pos, "acts": acts}
+	# People: their actions that aren't tied to a prop.
+	var per_npc := {}
+	for a in by_id.values():
+		if attached.has(String(a.id)) or a.npcs.is_empty():
+			continue
+		for n in a.npcs:
+			if not per_npc.has(n):
+				per_npc[n] = []
+			per_npc[n].append(a)
+	var names := _npc_names()
+	for n in per_npc:
+		var anc: Dictionary = world.get_npc_anchor(n)
+		if not anc.visible:
+			continue
+		var pos: Vector3 = anc.pos
+		var dx := absf(pos.x - pp.x)
+		var dz := absf(pos.z - pp.z)
+		if dx > 1.6 or absf(pos.y - 2.2 - pp.y) > 1.0 or dz > 3.2:
+			continue
+		var d := dx + 0.2 * dz
+		if d < best_d:
+			best_d = d
+			best = {"key": "npc:" + String(n), "index": -1, "name": String(names.get(n, n)), "pos": pos + Vector3(0, 0.45, 0), "acts": per_npc[n]}
+	return best
+
+
+func _focus_card_build() -> PanelContainer:
+	var card := PanelContainer.new()
+	var st := _style(0.9, 9)
+	st.content_margin_left = 12
+	st.content_margin_right = 12
+	st.content_margin_top = 8
+	st.content_margin_bottom = 8
+	st.border_color = ACCENT
+	st.set_border_width_all(2)
+	card.add_theme_stylebox_override("panel", st)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 3)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(v)
+	v.add_child(_label(String(focus.name).to_upper(), 12, Color(1, 1, 1, 0.5), true))
+	var acts: Array = focus.acts
+	for i in acts.size():
+		var a: Dictionary = acts[i]
+		var sel := i == focus_sel
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", 8)
+		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(h)
+		var cap_text := "E" if sel else " "
+		if sel:
+			h.add_child(_keycap(cap_text, 12))
+		else:
+			var spacer := Control.new()
+			spacer.custom_minimum_size = Vector2(22, 0)
+			h.add_child(spacer)
+		var enabled: bool = a.enabled
+		var col := Color.WHITE if enabled else Color(1, 1, 1, 0.45)
+		if sel and enabled:
+			col = ACCENT
+		var cost := "do rana" if a.id == "sleep" else _format_cost(a.cost)
+		h.add_child(_label(("🔒 " if not enabled else "") + String(a.label), 16, col, sel))
+		h.add_child(_label(cost, 12, Color(1, 1, 1, 0.45)))
+		if sel and not enabled and not String(a.why).is_empty():
+			var why := _label(String(a.why), 12, Color(1.0, 0.65, 0.55))
+			why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			why.custom_minimum_size = Vector2(260, 0)
+			v.add_child(why)
+	if acts.size() > 1:
+		v.add_child(_label("F – następna opcja", 11, Color(1, 1, 1, 0.35)))
+	return card
+
+
+func _update_focus() -> void:
+	var cam := get_viewport().get_camera_3d()
+	var f := {}
+	if cam != null and not _any_menu() and not busy and not player.is_animating() and not sim.is_finished():
+		f = _find_focus()
+	var old_key := String(focus.get("key", ""))
+	if String(f.get("key", "")) != old_key:
+		# Start on the first thing you can actually do.
+		focus_sel = 0
+		var fa: Array = f.get("acts", [])
+		for i in fa.size():
+			if fa[i].enabled:
+				focus_sel = i
+				break
+	focus = f
+	world.set_highlight(int(focus.get("index", -1)) if not focus.is_empty() else -1)
+	if focus.is_empty():
+		if focus_card != null:
+			focus_card.queue_free()
+			focus_card = null
+			focus_sig = ""
+		return
+	var acts: Array = focus.acts
+	focus_sel = clampi(focus_sel, 0, acts.size() - 1)
+	var sig := "%s|%d" % [focus.key, focus_sel]
+	for a in acts:
+		sig += "|%s:%s" % [a.id, a.enabled]
+	if sig != focus_sig or focus_card == null:
+		if focus_card != null:
+			focus_card.queue_free()
+		focus_card = _focus_card_build()
+		prompt_layer.add_child(focus_card)
+		focus_sig = sig
+	var size := focus_card.get_combined_minimum_size()
+	var screen := cam.unproject_position(focus.pos)
+	focus_card.size = size
+	focus_card.position = (screen - Vector2(size.x / 2.0, size.y + 6.0)).round()
+
+
+func _use_focus() -> void:
+	var acts: Array = focus.acts
+	var a: Dictionary = acts[focus_sel]
+	if not a.enabled:
+		_notice(String(a.why))
+		return
+	_on_action(String(a.id))
+
+
 func _process(delta: float) -> void:
 	if not pending_changes.is_empty() and not busy and not player.is_animating():
 		_flush_changes()
@@ -1039,6 +1210,7 @@ func _process(delta: float) -> void:
 		notice_time -= delta
 		notice_label.modulate.a = clampf(notice_time, 0.0, 1.0)
 	_update_prompts()
+	_update_focus()
 
 
 func _on_day_started(day: int, day_name: String) -> void:
@@ -1067,9 +1239,13 @@ func _fill_actions() -> void:
 	var c := sim.get_clock()
 	action_title.text = sim.get_location_name(sim.get_location())
 	action_sub.text = "%s, %s" % [c.day_name, c.time]
-	var acts := sim.get_actions()
+	_ensure_interactables()
+	var acts: Array = []
+	for a in sim.get_actions():
+		if not attached.has(String(a.id)) and a.npcs.is_empty():
+			acts.append(a)
 	if acts.is_empty():
-		action_list.add_child(_label("Nic tu nie przychodzi ci do głowy.", 16, MUTED))
+		action_list.add_child(_label("Podejdź do czegoś albo do kogoś – zobaczysz, co możesz zrobić.", 16, MUTED))
 		return
 	acts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var ga: int = GROUPS.get(a.group, ["", "", 99])[2]
@@ -1511,6 +1687,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_pause()
 	elif event.is_action_pressed("help"):
 		_set_menu(help_panel, not help_panel.visible)
+	elif event.is_action_pressed("act") and not focus.is_empty():
+		_use_focus()
+	elif event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F and not focus.is_empty():
+		focus_sel = (focus_sel + 1) % (focus.acts as Array).size()
 	elif event.is_action_pressed("act"):
 		_set_menu(action_panel, true)
 		_fill_actions()

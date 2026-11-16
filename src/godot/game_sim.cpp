@@ -109,6 +109,7 @@ void GameSim::ensure_input_actions() {
 		{ "move_right", { KEY_D, KEY_RIGHT } },
 		{ "move_up", { KEY_W, KEY_UP } },
 		{ "move_down", { KEY_S, KEY_DOWN } },
+		{ "sprint", { KEY_SHIFT, KEY_NONE } },
 		{ "act", { KEY_E, KEY_ENTER } },
 		{ "phone", { KEY_P, KEY_NONE } },
 		{ "stash", { KEY_Q, KEY_TAB } },

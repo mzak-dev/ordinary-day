@@ -121,8 +121,10 @@ bool PlayerController::near_line() const {
 }
 
 void PlayerController::walk(double dx, double dz, double delta) {
-	double nx = x_ + dx * speed_ * delta;
-	double nz = z_ + dz * speed_ * 0.75 * delta;
+	// Shift: sprint.
+	const double sp = speed_ * (Input::get_singleton()->is_action_pressed("sprint") ? 1.9 : 1.0);
+	double nx = x_ + dx * sp * delta;
+	double nz = z_ + dz * sp * 0.75 * delta;
 
 	// A passage under the player lets the depth band stretch into the next segment.
 	Array passages = world_->get_passages();

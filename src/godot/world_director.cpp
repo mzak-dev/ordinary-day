@@ -64,6 +64,8 @@ void WorldDirector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_segment", "id"), &WorldDirector::get_segment);
 	ClassDB::bind_method(D_METHOD("get_link_def", "id"), &WorldDirector::get_link_def);
 	ClassDB::bind_method(D_METHOD("get_passages"), &WorldDirector::get_passages);
+	ClassDB::bind_method(D_METHOD("get_interactables"), &WorldDirector::get_interactables);
+	ClassDB::bind_method(D_METHOD("set_highlight", "index"), &WorldDirector::set_highlight);
 	ClassDB::bind_method(D_METHOD("find_links", "seg", "x", "radius"), &WorldDirector::find_links, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("set_door_open", "link_id", "open"), &WorldDirector::set_door_open);
 	ClassDB::bind_method(D_METHOD("refresh"), &WorldDirector::refresh);
@@ -449,12 +451,22 @@ void WorldDirector::build_props() {
 			if (dz >= 0.0 && double(pos.z) < 0.0) { // everything in the front layer of the block
 				WallProp w;
 				w.mesh = mi;
-				w.mat = make_voxel_material();
+				w.mat = own_material(mi);
 				w.building = b;
 				w.floor = int(std::floor(double(pos.y) / b->get_floor_h() + 0.001));
-				mi->set_material_override(w.mat);
 				wall_props_.push_back(w);
 			}
+		}
+		PackedStringArray acts = p.get("acts", PackedStringArray());
+		if (!acts.is_empty()) {
+			Interactable it;
+			it.mesh = mi;
+			it.mat = own_material(mi);
+			it.name = p.get("name", name);
+			it.acts = acts;
+			AABB box = mesh->get_aabb();
+			it.top = pos + Vector3(0.0f, box.position.y + box.size.y + 0.25f, box.position.z + box.size.z);
+			interactables_.push_back(it);
 		}
 		if (name == "lamp") {
 			SpotLight3D *l = memnew(SpotLight3D);
@@ -477,6 +489,37 @@ void WorldDirector::build_props() {
 	bus_->add_child(bus_mesh);
 	bus_mesh->set_mesh(prop_mesh("bus"));
 	bus_->set_visible(false);
+}
+
+Ref<ShaderMaterial> WorldDirector::own_material(MeshInstance3D *mi) {
+	auto it = own_mats_.find(mi);
+	if (it != own_mats_.end()) {
+		return it->second;
+	}
+	Ref<ShaderMaterial> m = make_voxel_material();
+	mi->set_material_override(m);
+	own_mats_[mi] = m;
+	return m;
+}
+
+Array WorldDirector::get_interactables() const {
+	Array out;
+	for (size_t i = 0; i < interactables_.size(); ++i) {
+		const Interactable &it = interactables_[i];
+		Dictionary d;
+		d["index"] = int(i);
+		d["name"] = it.name;
+		d["acts"] = it.acts;
+		d["pos"] = it.top;
+		out.push_back(d);
+	}
+	return out;
+}
+
+void WorldDirector::set_highlight(int index) {
+	for (size_t i = 0; i < interactables_.size(); ++i) {
+		interactables_[i].target = int(i) == index ? 1.0f : 0.0f;
+	}
 }
 
 void WorldDirector::build_doors() {
@@ -703,6 +746,15 @@ void WorldDirector::_process(double delta) {
 		bool same_place = std::fabs(pp.y - p.y) < 1.5f && std::fabs(dx) < 14.0f;
 		a.bubble->set_visible(a.has_action && same_place && !near && a.alpha > 0.5f);
 		a.bubble->set_position(Vector3(0, 3.2f + 0.08f * float(std::sin(time_ * 4.0 + a.phase)), 0.05f));
+	}
+	for (Interactable &it : interactables_) {
+		if (std::fabs(it.glow - it.target) > 0.001f) {
+			it.glow += (it.target - it.glow) * std::min(1.0f, float(delta) * 10.0f);
+			if (std::fabs(it.glow - it.target) < 0.01f) {
+				it.glow = it.target;
+			}
+			it.mat->set_shader_parameter("highlight", it.glow);
+		}
 	}
 	if (player) {
 		for (CutawayBuilding *b : buildings_) {
