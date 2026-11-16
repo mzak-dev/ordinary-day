@@ -22,6 +22,12 @@ window/size/viewport_height=900
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
+anti_aliasing/quality/msaa_3d=2
+
 [shader_globals]
 
 od_night={
@@ -32,9 +38,3 @@ od_wetness={
 "type": "float",
 "value": 0.0
 }
-
-[rendering]
-
-textures/canvas_textures/default_texture_filter=0
-lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
-anti_aliasing/quality/msaa_3d=2
