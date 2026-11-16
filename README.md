@@ -1,4 +1,4 @@
-# Ordinary Day
+# INCEL
 
 Symulator zupełnie zwyczajnego tygodnia introwertyka. Godot 4 + C++ (GDExtension), otoczenie z wokseli, postacie w pixel arcie, widok z boku z budynkami w przekroju.
 
@@ -43,7 +43,7 @@ godot --path game --import                                # pierwszy import zaso
 godot --path game                                         # menu → gra
 ```
 
-Na Windows/Linux: `scons platform=windows` / `platform=linux` – ścieżki są już w `ordinary_day.gdextension`.
+Na Windows/Linux: `scons platform=windows` / `platform=linux` – ścieżki są już w `incel.gdextension`.
 
 ## Testy efektu motyla
 

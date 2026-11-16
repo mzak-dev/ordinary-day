@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates placeholder art for Ordinary Day.
+"""Generates placeholder art for INCEL.
 
   * game/assets/vox/*.vox        - MagicaVoxel models (1 voxel = 1/16 m), editable in MagicaVoxel
   * game/assets/sprites/*.png    - 4-frame 16x32 pixel-art characters (idle, step, pass, step)
