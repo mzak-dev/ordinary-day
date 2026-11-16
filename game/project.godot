@@ -12,8 +12,12 @@ config_version=5
 
 config/name="Ordinary Day"
 config/description="Symulator zupełnie zwyczajnego tygodnia introwertyka."
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
+
+[autoload]
+
+Session="*res://ui/session.gd"
 
 [display]
 

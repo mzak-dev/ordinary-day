@@ -82,9 +82,7 @@ var phone_panel: PanelContainer
 var phone_list: VBoxContainer
 var help_panel: PanelContainer
 var end_panel: PanelContainer
-var main_menu: Control
-var main_buttons: VBoxContainer
-var main_continue: Button
+var settings_panel: SettingsPanel
 var pause_menu: Control
 var pause_buttons: VBoxContainer
 
@@ -119,11 +117,16 @@ func _ready() -> void:
 	sim.changes.connect(_on_changes)
 	player.notice.connect(_notice)
 	player.screen_fade.connect(_on_screen_fade)
-	for m in sim.get_recent_messages():
-		_on_message(m.kind, m.from, m.text)
+	# The menu scene decides whether we start fresh or continue a save.
+	Session.game_root = get_parent()
+	Session.apply_to_game(get_parent())
+	var loaded := Session.continue_game and sim.load_game(SAVE_PATH)
+	Session.continue_game = false
+	if not loaded:
+		sim.new_game(0)
 	_refresh()
-	if OS.get_cmdline_user_args().is_empty():
-		_open_main_menu()
+	fade.color.a = 1.0
+	create_tween().tween_property(fade, "color:a", 0.0, 0.8)
 
 
 # ================================================================== building
@@ -242,7 +245,10 @@ func _build() -> void:
 	root.add_child(day_label)
 
 	_build_pause(root)
-	_build_main_menu(root)
+	settings_panel = SettingsPanel.new()
+	settings_panel.visible = false
+	settings_panel.closed.connect(func() -> void: pause_buttons.get_child(3).grab_focus())
+	root.add_child(settings_panel)
 
 
 func _build_status(root: Control) -> void:
@@ -606,6 +612,7 @@ func _build_pause(root: Control) -> void:
 		["Wznów", _close_pause],
 		["Zapisz", _pause_save],
 		["Wczytaj", _pause_load],
+		["Ustawienia", _show_settings],
 		["Jak grać", _show_help],
 		["Menu główne", _pause_to_main],
 		["Wyjdź z gry", _save_and_quit],
@@ -628,14 +635,24 @@ func _pause_load() -> void:
 		_notice("Brak zapisu.")
 
 
+func _show_settings() -> void:
+	settings_panel.open()
+
+
 func _show_help() -> void:
 	help_panel.visible = true
 
 
 func _pause_to_main() -> void:
-	sim.save_game(SAVE_PATH)
-	_close_pause()
-	_open_main_menu()
+	if not sim.is_finished():
+		sim.save_game(SAVE_PATH)
+	_to_menu()
+
+
+func _to_menu() -> void:
+	var tw := create_tween()
+	tw.tween_property(fade, "color:a", 1.0, 0.4)
+	tw.tween_callback(Session.to_menu)
 
 
 func _save_and_quit() -> void:
@@ -643,82 +660,6 @@ func _save_and_quit() -> void:
 		sim.save_game(SAVE_PATH)
 	get_tree().quit()
 
-
-func _main_continue() -> void:
-	if sim.load_game(SAVE_PATH):
-		_close_main_menu()
-	else:
-		_notice("Nie udało się wczytać zapisu.")
-
-
-func _main_new() -> void:
-	if sim.get_clock().t > 7 * 4 or sim.is_finished():
-		sim.new_game(0)
-	_close_main_menu()
-
-
-func _build_main_menu(root: Control) -> void:
-	main_menu = Control.new()
-	main_menu.set_anchors_preset(Control.PRESET_FULL_RECT)
-	main_menu.visible = false
-	root.add_child(main_menu)
-
-	var grad := GradientTexture2D.new()
-	var g := Gradient.new()
-	g.set_color(0, Color(0.03, 0.03, 0.05, 0.92))
-	g.set_color(1, Color(0.03, 0.03, 0.05, 0.0))
-	grad.gradient = g
-	grad.fill_from = Vector2(0.4, 0)
-	grad.fill_to = Vector2(1, 0)
-	var tex := TextureRect.new()
-	tex.texture = grad
-	tex.set_anchors_preset(Control.PRESET_LEFT_WIDE)
-	tex.custom_minimum_size = Vector2(760, 0)
-	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tex.stretch_mode = TextureRect.STRETCH_SCALE
-	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	main_menu.add_child(tex)
-
-	var col := VBoxContainer.new()
-	col.set_anchors_preset(Control.PRESET_LEFT_WIDE)
-	col.position = Vector2(90, 0)
-	col.custom_minimum_size = Vector2(520, 0)
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 6)
-	main_menu.add_child(col)
-	var title := VBoxContainer.new()
-	title.add_theme_constant_override("separation", -30)
-	title.add_child(_label("ORDINARY", 84, Color.WHITE, true))
-	title.add_child(_label("DAY", 84, ACCENT, true))
-	col.add_child(title)
-	var tag := _label("Tydzień jak każdy inny. Prawie.", 20, MUTED)
-	col.add_child(tag)
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 36)
-	col.add_child(spacer)
-	main_buttons = VBoxContainer.new()
-	main_buttons.add_theme_constant_override("separation", 4)
-	col.add_child(main_buttons)
-	main_continue = _menu_button("Kontynuuj")
-	main_continue.pressed.connect(_main_continue)
-	main_buttons.add_child(main_continue)
-	var fresh := _menu_button("Nowy tydzień")
-	fresh.pressed.connect(_main_new)
-	main_buttons.add_child(fresh)
-	var how := _menu_button("Jak grać")
-	how.pressed.connect(_show_help)
-	main_buttons.add_child(how)
-	var quit := _menu_button("Wyjdź")
-	quit.pressed.connect(func() -> void: get_tree().quit())
-	main_buttons.add_child(quit)
-
-	var foot := _label("Godot 4 · C++ · woksele i piksele", 13, Color(1, 1, 1, 0.3))
-	foot.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	foot.position = Vector2(90, -48)
-	main_menu.add_child(foot)
-
-
-# ================================================================== menus
 
 var menu_blur_amount := 0.0
 
@@ -731,33 +672,6 @@ func _set_blur(v: float) -> void:
 	menu_blur_amount = v
 	post.set_shader_parameter("blur", 0.6 * v)
 	post.set_shader_parameter("dim", 0.35 * v)
-
-
-func _open_main_menu() -> void:
-	main_continue.disabled = not FileAccess.file_exists(SAVE_PATH)
-	main_menu.visible = true
-	hud_group.visible = false
-	main_menu.modulate.a = 0.0
-	create_tween().tween_property(main_menu, "modulate:a", 1.0, 0.5)
-	_menu_blur(true)
-	_update_input()
-	await get_tree().process_frame
-	var first: Button = main_continue if not main_continue.disabled else main_buttons.get_child(1)
-	first.grab_focus()
-
-
-func _close_main_menu() -> void:
-	var tw := create_tween()
-	tw.tween_property(main_menu, "modulate:a", 0.0, 0.35)
-	tw.tween_callback(_hide_main_menu)
-	_menu_blur(false)
-	_refresh()
-
-
-func _hide_main_menu() -> void:
-	main_menu.visible = false
-	hud_group.visible = true
-	_update_input()
 
 
 func _open_pause() -> void:
@@ -776,7 +690,7 @@ func _close_pause() -> void:
 
 
 func _overlay_open() -> bool:
-	return main_menu.visible or pause_menu.visible or end_panel.visible
+	return pause_menu.visible or end_panel.visible
 
 
 func _any_menu() -> bool:
@@ -951,7 +865,7 @@ func _tint_log() -> void:
 
 func _prompt_chip(key_text: String, text: String, sub := "") -> PanelContainer:
 	var p := PanelContainer.new()
-	var s := _style(0.84, 7)
+	var s := _style(0.86, 7)
 	s.content_margin_left = 8
 	s.content_margin_right = 12
 	s.content_margin_top = 5
@@ -960,79 +874,127 @@ func _prompt_chip(key_text: String, text: String, sub := "") -> PanelContainer:
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 8)
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	p.add_child(h)
-	h.add_child(_keycap(key_text, 13))
+	var cap := _keycap(key_text, 13)
+	cap.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	h.add_child(cap)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 0)
+	v.add_theme_constant_override("separation", 1)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(v)
 	v.add_child(_label(text, 15, Color.WHITE, true))
-	var sl := _label(sub, 12, Color(1.0, 0.7, 0.6))
-	sl.visible = not sub.is_empty()
-	sl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	sl.custom_minimum_size = Vector2(0, 0)
-	v.add_child(sl)
+	if not sub.is_empty():
+		# Fixed width, otherwise autowrap collapses the label to one letter per line.
+		var sl := _label(sub, 12, Color(1.0, 0.72, 0.62))
+		sl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sl.custom_minimum_size = Vector2(240, 0)
+		v.add_child(sl)
 	p.set_meta("style", s)
 	return p
+
+
+## Collects what can be done right here: doors, stairs, the bus and NPCs.
+## Returns key -> {cap, text, sub, pos, active, ok, order}.
+func _collect_prompts() -> Dictionary:
+	var out := {}
+	var seg := sim.get_player_seg()
+	var segd: Dictionary = world.get_segment(seg)
+	var px := player.global_position.x
+	var py := float(segd.get("y", 0.0))
+	var pz := float(segd.get("z", 0.0))
+	var links: Array = world.find_links(seg, px, 3.0)
+	# The link W/S would use right now: nearest per key within reach (same rule as the player).
+	var chosen := {}
+	for l in links:
+		var d := absf(float(l.x) - px)
+		if d <= 1.6 and (not chosen.has(l.key) or d < float(chosen[l.key].d)):
+			chosen[l.key] = {"id": l.id, "from_a": l.from_a, "d": d}
+	for l in links:
+		var def: Dictionary = world.get_link_def(l.id)
+		var anim := String(def.get("anim", ""))
+		var up: bool = l.key != "down"
+		var text: String = l.label
+		if anim == "stairs":
+			text = ("▲  " if up else "▼  ") + text
+		elif anim == "bus":
+			text = "🚌  " + text
+		var active: bool = chosen.has(l.key) and chosen[l.key].id == l.id and chosen[l.key].from_a == l.from_a
+		var sub := ""
+		if not l.ok:
+			text = "🔒  " + text
+			if active:
+				sub = String(l.why)
+		out["link:%s:%s" % [l.id, l.from_a]] = {
+			"cap": "W" if up else "S", "text": text, "sub": sub,
+			"pos": Vector3(float(l.x), py + 2.2, pz), "active": active, "ok": l.ok,
+			"order": 0 if up else 1,
+		}
+	for id in npc_actions:
+		var a: Dictionary = world.get_npc_anchor(id)
+		if not a.visible:
+			continue
+		var p: Vector3 = a.pos
+		if absf(p.x - px) > 3.0 or absf(p.y - 2.2 - py) > 1.0:
+			continue
+		out["npc:" + id] = {
+			"cap": "E", "text": String(npc_actions[id]), "sub": "",
+			"pos": p + Vector3(0, 0.55, 0), "active": absf(p.x - px) < 1.8, "ok": true, "order": 2,
+		}
+	return out
 
 
 func _update_prompts() -> void:
 	var cam := get_viewport().get_camera_3d()
 	var wanted := {}
-	var active := cam != null and not _any_menu() and not busy and not player.is_animating() and not sim.is_finished()
-	if active:
-		var seg := sim.get_player_seg()
-		var segd: Dictionary = world.get_segment(seg)
-		var px := player.global_position.x
-		for l in world.find_links(seg, px, 1.8):
-			var key := "link:%s:%s" % [l.id, l.from_a]
-			var near := absf(float(l.x) - px) <= 0.8
-			var keyc := "S" if l.key == "down" else "W"
-			var text: String = l.label
-			var sub := ""
-			if not l.ok:
-				text = "🔒 " + text
-				if near:
-					sub = String(l.why)
-			var pos := Vector3(float(l.x), float(segd.get("y", 0.0)) + 2.75, float(segd.get("z", 0.0)))
-			wanted[key] = [keyc, text, sub, pos, near, l.ok]
-		for id in npc_actions:
-			var a: Dictionary = world.get_npc_anchor(id)
-			if not a.visible:
-				continue
-			var p: Vector3 = a.pos
-			if absf(p.x - px) > 3.0 or absf(p.y - 2.2 - player.global_position.y) > 1.5:
-				continue
-			wanted["npc:" + id] = ["E", String(npc_actions[id]), "", p + Vector3(0, 0.55, 0), absf(p.x - px) < 1.6, true]
-	# Remove stale chips.
+	if cam != null and not _any_menu() and not busy and not player.is_animating() and not sim.is_finished():
+		wanted = _collect_prompts()
 	for key in prompt_chips.keys():
 		if not wanted.has(key):
 			var old: Control = prompt_chips[key]
 			prompt_chips.erase(key)
 			var tw := create_tween()
-			tw.tween_property(old, "modulate:a", 0.0, 0.15)
+			tw.tween_property(old, "modulate:a", 0.0, 0.12)
 			tw.tween_callback(old.queue_free)
-	for key in wanted:
-		var w: Array = wanted[key]
-		var chip: PanelContainer
-		if prompt_chips.has(key):
-			chip = prompt_chips[key]
-			var sub_label: Label = chip.get_child(0).get_child(1).get_child(1)
-			if sub_label.text != w[2]:
-				sub_label.text = w[2]
-				sub_label.visible = not String(w[2]).is_empty()
-				chip.reset_size()
-		else:
-			chip = _prompt_chip(w[0], w[1], w[2])
-			chip.modulate.a = 0.0
+	var keys := wanted.keys()
+	keys.sort_custom(func(a: String, b: String) -> bool: return int(wanted[a].order) < int(wanted[b].order))
+	var placed: Array[Rect2] = []
+	var dt := get_process_delta_time()
+	for key in keys:
+		var w: Dictionary = wanted[key]
+		var sig := "%s|%s|%s" % [w.cap, w.text, w.sub]
+		var chip: PanelContainer = prompt_chips.get(key)
+		if chip == null or String(chip.get_meta("sig", "")) != sig:
+			var alpha := 0.0
+			if chip != null:
+				alpha = chip.modulate.a
+				chip.queue_free()
+			chip = _prompt_chip(w.cap, w.text, w.sub)
+			chip.set_meta("sig", sig)
+			chip.modulate.a = alpha
 			prompt_layer.add_child(chip)
 			prompt_chips[key] = chip
-		var screen := cam.unproject_position(w[3])
-		chip.position = (screen - Vector2(chip.size.x / 2.0, chip.size.y)).round()
-		var target_alpha := 1.0 if w[4] else 0.55
-		chip.modulate.a = move_toward(chip.modulate.a, target_alpha, get_process_delta_time() * 5.0)
-		var s: StyleBoxFlat = chip.get_meta("style")
-		s.border_color = (ACCENT if w[5] else Color(1.0, 0.5, 0.45)) if w[4] else Color(1, 1, 1, 0.07)
-		s.set_border_width_all(2 if w[4] else 1)
+		var size := chip.get_combined_minimum_size()
+		var screen := cam.unproject_position(w.pos)
+		var rect := Rect2(screen - Vector2(size.x / 2.0, size.y), size)
+		# Stack chips that would overlap (e.g. stairs up and down at the same spot).
+		for _i in 8:
+			var bumped := false
+			for r in placed:
+				if r.grow(3.0).intersects(rect):
+					rect.position.y = r.position.y - rect.size.y - 6.0
+					bumped = true
+			if not bumped:
+				break
+		placed.append(rect)
+		var target := rect.position.round()
+		chip.position = target if chip.modulate.a < 0.05 else chip.position.lerp(target, minf(1.0, dt * 18.0))
+		chip.size = size
+		var target_alpha := 1.0 if w.active else 0.5
+		chip.modulate.a = move_toward(chip.modulate.a, target_alpha, dt * 5.0)
+		var st: StyleBoxFlat = chip.get_meta("style")
+		st.border_color = (ACCENT if w.ok else Color(1.0, 0.5, 0.45)) if w.active else Color(1, 1, 1, 0.07)
+		st.set_border_width_all(2 if w.active else 1)
 
 
 # ================================================================== log & notices
@@ -1502,18 +1464,9 @@ func _on_slot(i: int) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if end_panel.visible:
 		return
-	if main_menu.visible:
-		if event.is_action_pressed("move_up"):
-			_focus_step(main_buttons, -1)
-		elif event.is_action_pressed("move_down"):
-			_focus_step(main_buttons, 1)
-		elif event.is_action_pressed("act"):
-			_press_focused(main_buttons)
-		else:
-			return
-		get_viewport().set_input_as_handled()
-		return
 	if pause_menu.visible:
+		if settings_panel.visible:
+			return
 		if event.is_action_pressed("ui_cancel"):
 			if help_panel.visible:
 				help_panel.visible = false
@@ -1615,9 +1568,8 @@ func _press_focused(box: Container) -> void:
 # ================================================================== ending
 
 func _restart_week() -> void:
-	if FileAccess.file_exists(SAVE_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
-	get_tree().reload_current_scene()
+	Session.delete_save()
+	Session.start_new()
 
 
 func _on_finished() -> void:
@@ -1652,9 +1604,11 @@ func _on_finished() -> void:
 	var again := _menu_button("Jeszcze raz ten tydzień", 22)
 	again.pressed.connect(_restart_week)
 	buttons.add_child(again)
-	var quit := _menu_button("Wyjdź", 22)
-	quit.pressed.connect(func() -> void: get_tree().quit())
-	buttons.add_child(quit)
+	var menu := _menu_button("Menu główne", 22)
+	menu.pressed.connect(func() -> void:
+		Session.delete_save()
+		_to_menu())
+	buttons.add_child(menu)
 
 	var right := VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL

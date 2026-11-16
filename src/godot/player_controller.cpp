@@ -224,12 +224,20 @@ void PlayerController::try_link(const String &key) {
 	if (!world_ || !sim_) {
 		return;
 	}
-	Array links = world_->find_links(seg_, x_);
+	// Pick the nearest link with this key within reach; the player walks to it.
+	Array links = world_->find_links(seg_, x_, 1.6);
+	Dictionary best;
+	double best_d = 1e9;
 	for (int64_t i = 0; i < links.size(); ++i) {
 		Dictionary l = links[i];
-		if (String(l.get("key", "")) != key) {
-			continue;
+		double d = std::fabs(double(l.get("x", 0.0)) - x_);
+		if (String(l.get("key", "")) == key && d < best_d) {
+			best_d = d;
+			best = l;
 		}
+	}
+	if (!best.is_empty()) {
+		Dictionary l = best;
 		if (!bool(l.get("ok", false))) {
 			emit_signal("notice", l.get("why", ""));
 			return;
@@ -253,7 +261,6 @@ void PlayerController::try_link(const String &key) {
 				vpos_ = Vector3(float(x_), float(y_), float(z_)); }, nullptr);
 		}
 		update_prompt();
-		return;
 	}
 }
 

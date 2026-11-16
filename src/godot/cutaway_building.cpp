@@ -398,6 +398,12 @@ void CutawayBuilding::set_light_level(float level) {
 	}
 }
 
+void CutawayBuilding::set_light_shadows(bool enabled) {
+	for (OmniLight3D *l : lights_) {
+		l->set_shadow(enabled);
+	}
+}
+
 void CutawayBuilding::_process(double delta) {
 	if (std::fabs(alpha_ - target_alpha_) < 0.001f) {
 		return;

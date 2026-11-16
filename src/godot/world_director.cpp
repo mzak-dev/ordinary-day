@@ -66,6 +66,7 @@ void WorldDirector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_links", "seg", "x", "radius"), &WorldDirector::find_links, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("set_door_open", "link_id", "open"), &WorldDirector::set_door_open);
 	ClassDB::bind_method(D_METHOD("refresh"), &WorldDirector::refresh);
+	ClassDB::bind_method(D_METHOD("set_quality", "quality"), &WorldDirector::set_quality);
 	ClassDB::bind_method(D_METHOD("get_npc_anchor", "id"), &WorldDirector::get_npc_anchor);
 	ClassDB::bind_method(D_METHOD("on_state_changed"), &WorldDirector::on_state_changed);
 }
@@ -559,6 +560,15 @@ Dictionary WorldDirector::get_npc_anchor(const String &id) const {
 		}
 	}
 	return d;
+}
+
+void WorldDirector::set_quality(int quality) {
+	for (CutawayBuilding *b : buildings_) {
+		b->set_light_shadows(quality >= 2);
+	}
+	for (SpotLight3D *l : street_lights_) {
+		l->set_param(Light3D::PARAM_VOLUMETRIC_FOG_ENERGY, quality >= 1 ? 3.0f : 0.0f);
+	}
 }
 
 void WorldDirector::refresh() {

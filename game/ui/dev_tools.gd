@@ -71,10 +71,15 @@ func _run(cmd: String) -> void:
 			up.action = p[1]
 			up.pressed = false
 			Input.call_deferred("parse_input_event", up)
-		"menu":
-			hud._open_main_menu()
 		"pause":
 			hud._open_pause()
+		"nohud":
+			hud.visible = false
+		"quality":
+			Session.set_quality(int(p[1]))
+		"nolimit":
+			Session.set_fps_index(2)
+			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		"delay":
 			wait_left = float(p[1])
 		"shot":

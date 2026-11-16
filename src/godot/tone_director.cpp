@@ -65,6 +65,7 @@ void ToneDirector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_path", "p"), &ToneDirector::set_camera_path);
 	ClassDB::bind_method(D_METHOD("get_camera_path"), &ToneDirector::get_camera_path);
 	ClassDB::bind_method(D_METHOD("get_shown_warmth"), &ToneDirector::get_shown_warmth);
+	ClassDB::bind_method(D_METHOD("set_quality", "quality"), &ToneDirector::set_quality);
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sim_path"), "set_sim_path", "get_sim_path");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sun_path"), "set_sun_path", "get_sun_path");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "env_path"), "set_env_path", "get_env_path");
@@ -147,6 +148,20 @@ void ToneDirector::_ready() {
 	dust_->set_emitting(true);
 }
 
+void ToneDirector::set_quality(int quality) {
+	quality_ = quality;
+	if (dust_) {
+		dust_->set_visible(quality >= 1);
+		dust_->set_emitting(quality >= 1);
+	}
+	if (rain_) {
+		rain_->set_amount(quality == 0 ? 300 : (quality == 1 ? 600 : 900));
+	}
+	if (haze_) {
+		haze_->set_visible(quality >= 1);
+	}
+}
+
 void ToneDirector::_process(double delta) {
 	if (!sim_ || Engine::get_singleton()->is_editor_hint()) {
 		return;
@@ -223,7 +238,7 @@ void ToneDirector::_process(double delta) {
 				}
 			}
 			e->set_ambient_light_color(k.ambient * tint);
-			e->set_ambient_light_energy(k.ambient_energy * 0.5f);
+			e->set_ambient_light_energy(k.ambient_energy * (quality_ >= 2 ? 0.5f : 0.95f));
 			e->set_adjustment_enabled(true);
 			e->set_adjustment_saturation(0.7f + 0.5f * warmth_);
 			e->set_adjustment_contrast(1.06f + 0.06f * warmth_);

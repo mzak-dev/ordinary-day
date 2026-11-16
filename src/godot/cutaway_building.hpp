@@ -26,6 +26,7 @@ public:
 	void set_cutaway(bool open);
 	bool is_cutaway() const { return target_alpha_ < 0.5f; }
 	void set_light_level(float level);
+	void set_light_shadows(bool enabled);
 
 	String get_open_loc() const { return open_loc_; }
 	double get_x0() const { return x0_; }

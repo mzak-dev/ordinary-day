@@ -40,7 +40,7 @@ git submodule update --init                               # godot-cpp (gałąź 
 scons platform=macos arch=arm64 target=template_debug     # → game/bin/
 python3 tools/gen_assets.py                               # assety (już są w repo)
 godot --path game --import                                # pierwszy import zasobów
-godot --path game                                         # gra
+godot --path game                                         # menu → gra
 ```
 
 Na Windows/Linux: `scons platform=windows` / `platform=linux` – ścieżki są już w `ordinary_day.gdextension`.
@@ -70,9 +70,10 @@ Kamera jest perspektywiczna (34°, ok. 20 m od sceny, lekko z góry), więc poko
 
 ## Interfejs
 
-- **Menu główne:** Kontynuuj, Nowy tydzień, Jak grać, Wyjdź, na rozmytym tle sceny.
+- **Menu główne** to osobna, lekka scena (`scenes/menu.tscn`); gra ładuje się dopiero po „Nowy tydzień” albo „Kontynuuj” (z podsumowaniem zapisu).
+- **Ustawienia** (menu i pauza): jakość grafiki Niskie/Średnie/Wysokie, limit klatek, pełny ekran; zapis w `user://settings.cfg`. Niskie i Średnie wyłączają SDFGI, SSIL, SSR i cienie lamp w pokojach oraz renderują 3D w 55%/77% rozdzielczości z FSR. Ma to znaczenie na ekranach Retina, gdzie domyślnie renderuje się w 2×.
 - **Pauza (Esc):** zapis i wczytanie; gra zapisuje się sama na początku każdego dnia.
-- **Podpowiedzi w świecie:** nad drzwiami i schodami etykieta z klawiszem (kłódka i powód, gdy zamknięte). Nad NPC, z którym można coś zrobić, „!” z daleka i „E · akcja” z bliska.
+- **Podpowiedzi w świecie:** nad drzwiami, schodami (▲/▼) i przystankiem etykieta z klawiszem (kłódka i powód, gdy zamknięte). Nakładające się etykiety układają się jedna nad drugą, a aktywna ma ramkę. W/S działa do 1,6 m od przejścia – postać sama podchodzi. Nad NPC, z którym można coś zrobić, „!” z daleka i „E · akcja” z bliska.
 - **Pasek skrótów:** licznik akcji w miejscu i odznaka nieprzeczytanych wiadomości.
 - **Karty:** baner miejsca przy wejściu, „Nowa możliwość”, gdy w trakcie pobytu pojawi się nowa akcja, oraz zmiany relacji, przedmioty i konsekwencje.
 - **Menu akcji:** akcje pogrupowane, z kim je robisz, koszt czasu i powód blokady. Sterowanie strzałkami, W/S, 1–9 i E.
@@ -80,10 +81,10 @@ Kamera jest perspektywiczna (34°, ok. 20 m od sceny, lekko z góry), więc poko
 ## Testy wizualne
 
 ```sh
-godot --always-on-top --path game -- "--do=key:help,walk:street:6,delay:2,key:move_up,delay:0.5,shot:res://../build/door.png" --shot=res://../build/end.png
+godot --always-on-top --path game scenes/main.tscn -- "--do=key:help,walk:street:6,delay:2,key:move_up,delay:0.5,shot:res://../build/door.png" --shot=res://../build/end.png
 ```
 
-Komendy: `act:`, `hud:` (akcja z animacją HUD), `menu`, `pause`, `wait:HH:MM`, `go:link:a|b`, `walk:seg:x`, `take:item`, `key:akcja`, `delay:s`, `shot:ścieżka`. `--always-on-top` jest potrzebne na macOS, bo zasłonięte okno przestaje się renderować.
+Komendy: `act:`, `hud:` (akcja z animacją HUD), `pause`, `nohud`, `quality:0-2`, `nolimit`, `wait:HH:MM`, `go:link:a|b`, `walk:seg:x`, `take:item`, `key:akcja`, `delay:s`, `shot:ścieżka`. `--always-on-top` jest potrzebne na macOS, bo zasłonięte okno przestaje się renderować.
 
 ## Sterowanie
 

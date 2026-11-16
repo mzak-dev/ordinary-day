@@ -75,6 +75,7 @@ shader = ExtResource("3_post")
 [node name="Main" type="Node3D"]
 
 [node name="GameSim" type="GameSim" parent="."]
+autostart = false
 
 [node name="ToneDirector" type="ToneDirector" parent="."]
 

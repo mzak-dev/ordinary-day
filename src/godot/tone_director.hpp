@@ -32,6 +32,8 @@ public:
 	NodePath get_camera_path() const { return camera_path_; }
 
 	float get_shown_warmth() const { return warmth_; }
+	// 0 = low, 1 = medium, 2 = high
+	void set_quality(int quality);
 
 protected:
 	static void _bind_methods();
@@ -54,6 +56,7 @@ private:
 	float warmth_ = 0.15f;
 	float rain_amount_ = 0.0f;
 	float wet_ = 0.0f;
+	int quality_ = 2;
 	bool init_ = false;
 };
 

@@ -39,6 +39,8 @@ public:
 	// {visible: bool, pos: Vector3 above the head} for HUD prompts.
 	Dictionary get_npc_anchor(const String &id) const;
 	void refresh();
+	// 0 = low, 1 = medium, 2 = high
+	void set_quality(int quality);
 
 	static float character_pixel_size() { return 0.0625f; }
 	static Ref<Texture2D> load_sprite(const String &name);
