@@ -1,0 +1,15 @@
+# Build output
+build/
+game/bin/
+*.os
+*.o
+*.dblite
+
+# Godot
+game/.godot/
+*.translation
+
+# Local toolchain (downloaded, not part of the project)
+tools/Godot.app/
+
+.DS_Store
