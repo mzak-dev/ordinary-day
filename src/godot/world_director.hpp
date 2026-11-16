@@ -83,7 +83,7 @@ private:
 	void build_doors();
 	void build_npcs();
 	void on_state_changed();
-	Ref<ArrayMesh> prop_mesh(const String &name);
+	Ref<ArrayMesh> prop_mesh(const String &name, float voxel_size = 0.0625f);
 };
 
 } // namespace godot

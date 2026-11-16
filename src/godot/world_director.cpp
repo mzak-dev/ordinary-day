@@ -122,13 +122,16 @@ void WorldDirector::_ready() {
 	sim_->connect("state_changed", Callable(this, "on_state_changed"));
 }
 
-Ref<ArrayMesh> WorldDirector::prop_mesh(const String &name) {
-	auto it = mesh_cache_.find(name);
+Ref<ArrayMesh> WorldDirector::prop_mesh(const String &name, float voxel_size) {
+	// Hand-made models drawn on the 5 cm art grid set "vs" in world.json;
+	// the generated placeholders stay at 1/16 m.
+	String key = name + String("@") + String::num(voxel_size, 4);
+	auto it = mesh_cache_.find(key);
 	if (it != mesh_cache_.end()) {
 		return it->second;
 	}
-	Ref<ArrayMesh> m = VoxelModel::build_from_file("res://assets/vox/" + name + ".vox", 0.0625f);
-	mesh_cache_[name] = m;
+	Ref<ArrayMesh> m = VoxelModel::build_from_file("res://assets/vox/" + name + ".vox", voxel_size);
+	mesh_cache_[key] = m;
 	return m;
 }
 
@@ -428,7 +431,7 @@ void WorldDirector::build_props() {
 	for (int64_t i = 0; i < props.size(); ++i) {
 		Dictionary p = props[i];
 		String name = p.get("vox", "");
-		Ref<ArrayMesh> mesh = prop_mesh(name);
+		Ref<ArrayMesh> mesh = prop_mesh(name, float(double(p.get("vs", 0.0625))));
 		if (mesh.is_null()) {
 			continue;
 		}

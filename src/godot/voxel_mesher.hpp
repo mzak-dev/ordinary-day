@@ -41,7 +41,7 @@ uint32_t glow_night(uint32_t rgba);
 
 // Builds a face-culled mesh with baked ambient occlusion and per-voxel colour
 // noise. `origin` is the world-space position of voxel (0,0,0)'s min corner.
-Ref<ArrayMesh> build_voxel_mesh(const VoxelGrid &grid, float voxel_size, const Vector3 &origin, float noise = 0.06f);
+Ref<ArrayMesh> build_voxel_mesh(const VoxelGrid &grid, float voxel_size, const Vector3 &origin, float noise = 0.02f);
 // New material instance using res://shaders/voxel.gdshader.
 Ref<ShaderMaterial> make_voxel_material();
 
