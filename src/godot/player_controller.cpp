@@ -44,6 +44,12 @@ void PlayerController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sim_path"), "set_sim_path", "get_sim_path");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "world_path"), "set_world_path", "get_world_path");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "camera_path"), "set_camera_path", "get_camera_path");
+	ClassDB::bind_method(D_METHOD("set_indoor_distance", "d"), &PlayerController::set_indoor_distance);
+	ClassDB::bind_method(D_METHOD("get_indoor_distance"), &PlayerController::get_indoor_distance);
+	ClassDB::bind_method(D_METHOD("set_indoor_pitch", "p"), &PlayerController::set_indoor_pitch);
+	ClassDB::bind_method(D_METHOD("get_indoor_pitch"), &PlayerController::get_indoor_pitch);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "indoor_distance"), "set_indoor_distance", "get_indoor_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "indoor_pitch"), "set_indoor_pitch", "get_indoor_pitch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_enabled"), "set_input_enabled", "get_input_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "busy"), "set_busy", "get_busy");
@@ -81,11 +87,105 @@ void PlayerController::sync_from_sim() {
 		return;
 	}
 	seg_ = sim_->get_player_seg();
+	load_segment(s);
+	z_ = zline_;
+	x_ = std::max(x0_, std::min(x1_, sim_->get_player_x()));
+}
+
+void PlayerController::load_segment(const Dictionary &s) {
 	x0_ = double(s.get("x0", 0.0));
 	x1_ = double(s.get("x1", 0.0));
 	y_ = double(s.get("y", 0.0));
-	z_ = double(s.get("z", 0.0));
-	x_ = std::max(x0_, std::min(x1_, sim_->get_player_x()));
+	zline_ = double(s.get("z", 0.0));
+	zmin_ = zmax_ = zline_;
+	Array depth = s.get("depth", Array());
+	if (depth.size() == 2) {
+		zmin_ = std::min(double(depth[0]), zline_);
+		zmax_ = std::max(double(depth[1]), zline_);
+	}
+	walls_.clear();
+	Array walls = s.get("walls", Array());
+	for (int64_t i = 0; i < walls.size(); ++i) {
+		Dictionary w = walls[i];
+		Array gap = w.get("gap", Array());
+		Wall wall;
+		wall.x = double(w.get("x", 0.0));
+		wall.g0 = gap.size() == 2 ? double(gap[0]) : 1e9;
+		wall.g1 = gap.size() == 2 ? double(gap[1]) : -1e9;
+		walls_.push_back(wall);
+	}
+}
+
+bool PlayerController::near_line() const {
+	return std::fabs(z_ - zline_) < 0.75;
+}
+
+void PlayerController::walk(double dx, double dz, double delta) {
+	// Shift: sprint.
+	const double sp = speed_ * (Input::get_singleton()->is_action_pressed("sprint") ? 1.9 : 1.0);
+	double nx = x_ + dx * sp * delta;
+	double nz = z_ + dz * sp * 0.75 * delta;
+
+	// A passage under the player lets the depth band stretch into the next segment.
+	Array passages = world_->get_passages();
+	Dictionary pass;
+	bool front = true;
+	for (int64_t i = 0; i < passages.size(); ++i) {
+		Dictionary p = passages[i];
+		bool is_a = String(p.get("a", "")) == seg_;
+		bool is_b = String(p.get("b", "")) == seg_;
+		if ((is_a || is_b) && x_ >= double(p.get("x0", 0.0)) && x_ <= double(p.get("x1", 0.0))) {
+			pass = p;
+			front = is_a;
+			break;
+		}
+	}
+	double lo = zmin_, hi = zmax_;
+	Dictionary other;
+	if (!pass.is_empty()) {
+		other = world_->get_segment(pass.get(front ? "b" : "a", ""));
+		Array od = other.get("depth", Array());
+		double oz = double(other.get("z", 0.0));
+		if (front) {
+			lo = od.size() == 2 ? double(od[0]) : oz;
+		} else {
+			hi = od.size() == 2 ? double(od[1]) : oz;
+		}
+	}
+	nz = std::max(lo, std::min(hi, nz));
+
+	// Between the bands (inside a doorway) the player can't step sideways out of it.
+	if (z_ < zmin_ - 0.01 || z_ > zmax_ + 0.01) {
+		nx = std::max(double(pass.get("x0", x_)), std::min(double(pass.get("x1", x_)), nx));
+	}
+	nx = std::max(x0_, std::min(x1_, nx));
+	for (const Wall &w : walls_) {
+		bool crosses = (x_ < w.x && nx >= w.x) || (x_ > w.x && nx <= w.x);
+		if (crosses && !(nz >= w.g0 && nz <= w.g1)) {
+			nx = x_ < w.x ? w.x - 0.2 : w.x + 0.2;
+		}
+	}
+	if (std::fabs(dx) > 0.1) {
+		facing_left_ = dx < 0;
+	}
+	bool moved = std::fabs(nx - x_) > 1e-4 || std::fabs(nz - z_) > 1e-4;
+	if (!moved) {
+		return;
+	}
+	pose_ = Pose::Walk;
+	x_ = nx;
+	z_ = nz;
+	// Crossing the middle of a passage moves the player into the other segment.
+	if (!pass.is_empty()) {
+		double zs = double(pass.get("z", 0.0));
+		if ((front && z_ < zs) || (!front && z_ > zs)) {
+			seg_ = pass.get(front ? "b" : "a", "");
+			load_segment(other);
+		}
+	}
+	vpos_ = Vector3(float(x_), float(y_), float(z_));
+	sim_->set_player_pos(seg_, x_);
+	update_prompt();
 }
 
 void PlayerController::teleport(const String &seg, double x) {
@@ -97,10 +197,8 @@ void PlayerController::teleport(const String &seg, double x) {
 		return;
 	}
 	seg_ = seg;
-	x0_ = double(s.get("x0", 0.0));
-	x1_ = double(s.get("x1", 0.0));
-	y_ = double(s.get("y", 0.0));
-	z_ = double(s.get("z", 0.0));
+	load_segment(s);
+	z_ = zline_;
 	x_ = std::max(x0_, std::min(x1_, x));
 	vpos_ = Vector3(float(x_), float(y_), float(z_));
 	set_position(vpos_);
@@ -224,6 +322,9 @@ void PlayerController::try_link(const String &key) {
 	if (!world_ || !sim_) {
 		return;
 	}
+	if (!near_line()) {
+		return;
+	}
 	// Pick the nearest link with this key within reach; the player walks to it.
 	Array links = world_->find_links(seg_, x_, 1.6);
 	Dictionary best;
@@ -266,7 +367,7 @@ void PlayerController::try_link(const String &key) {
 
 void PlayerController::update_prompt() {
 	String text;
-	if (world_ && sim_ && !sim_->is_finished() && steps_.empty()) {
+	if (world_ && sim_ && !sim_->is_finished() && steps_.empty() && near_line()) {
 		Array links = world_->find_links(seg_, x_);
 		for (int64_t i = 0; i < links.size(); ++i) {
 			Dictionary l = links[i];
@@ -294,22 +395,21 @@ void PlayerController::_physics_process(double delta) {
 	}
 	Input *in = Input::get_singleton();
 	pose_ = Pose::Idle;
-	double dir = in->get_axis("move_left", "move_right");
-	if (std::fabs(dir) > 0.1) {
-		double nx = std::max(x0_, std::min(x1_, x_ + dir * speed_ * delta));
-		facing_left_ = dir < 0;
-		if (std::fabs(nx - x_) > 1e-4) {
-			pose_ = Pose::Walk;
-			x_ = nx;
-			vpos_ = Vector3(float(x_), float(y_), float(z_));
-			sim_->set_player_pos(seg_, x_);
-			update_prompt();
+	// On the walk line next to a door or stairs, W/S use it (as before).
+	if (near_line() && (in->is_action_just_pressed("move_up") || in->is_action_just_pressed("move_down"))) {
+		String key = in->is_action_just_pressed("move_up") ? "up" : "down";
+		Array links = world_->find_links(seg_, x_, 1.0);
+		for (int64_t i = 0; i < links.size(); ++i) {
+			if (String(Dictionary(links[i]).get("key", "")) == key) {
+				try_link(key);
+				return;
+			}
 		}
 	}
-	if (in->is_action_just_pressed("move_up")) {
-		try_link("up");
-	} else if (in->is_action_just_pressed("move_down")) {
-		try_link("down");
+	double dir = in->get_axis("move_left", "move_right");
+	double depth = in->get_axis("move_up", "move_down");
+	if (std::fabs(dir) > 0.1 || (std::fabs(depth) > 0.1 && zmax_ > zmin_)) {
+		walk(std::fabs(dir) > 0.1 ? dir : 0.0, std::fabs(depth) > 0.1 ? depth : 0.0, delta);
 	}
 }
 
@@ -372,17 +472,24 @@ void PlayerController::_process(double delta) {
 	sprite_->set_modulate(Color(1, 1, 1, alpha_));
 
 	if (camera_) {
-		Vector3 focus(vpos_.x, vpos_.y + 1.6f, -1.0f);
+		// Indoors the camera moves in to roughly one storey, like the old
+		// 192x108 hand-drawn frames; outside it pulls back to show the block.
+		const bool indoor = vpos_.z < 0.0f;
+		const float target_in = indoor ? 1.0f : 0.0f;
+		// Pinned to the player on every axis, depth included.
+		Vector3 focus(vpos_.x, vpos_.y + (indoor ? 1.45f : 1.6f), vpos_.z + (indoor ? -0.8f : -2.6f));
 		if (!cam_init_ || focus.distance_to(cam_focus_) > 30.0f) {
 			cam_focus_ = focus;
+			cam_in_ = target_in;
 			cam_init_ = true;
 		}
 		float k = 1.0f - std::exp(-float(delta) * 4.0f);
 		cam_focus_ = cam_focus_.lerp(focus, k);
-		// Close perspective camera looking slightly down: rooms read as real
-		// boxes with converging side walls, floors and ceilings.
-		const float dist = 19.5f;
-		const float pitch = 0.17f;
+		cam_in_ += (target_in - cam_in_) * (1.0f - std::exp(-float(delta) * 2.5f));
+		// Perspective camera looking slightly down: rooms read as real boxes
+		// with converging side walls, floors and ceilings.
+		const float dist = 19.5f + (indoor_distance_ - 19.5f) * cam_in_;
+		const float pitch = 0.17f + (indoor_pitch_ - 0.17f) * cam_in_;
 		camera_->set_position(cam_focus_ + Vector3(0.0f, dist * std::sin(pitch), dist * std::cos(pitch)));
 		camera_->set_rotation(Vector3(-pitch, 0.0f, 0.0f));
 	}

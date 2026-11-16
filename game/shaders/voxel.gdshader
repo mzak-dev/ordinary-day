@@ -12,6 +12,8 @@ uniform float fade : hint_range(0.0, 1.0) = 1.0;
 // Outdoor ground gets wet when it rains.
 uniform float wet_surface : hint_range(0.0, 1.0) = 0.0;
 uniform float emission_strength = 3.2;
+// 0..1: the object the player can use right now glows softly with a warm rim.
+uniform float highlight : hint_range(0.0, 1.0) = 0.0;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -54,6 +56,12 @@ void fragment() {
 	if (a < 0.99) {
 		float glow = a < 0.6 ? 1.0 : od_night;
 		EMISSION = col * glow * emission_strength;
+	}
+
+	if (highlight > 0.001) {
+		float pulse = 0.8 + 0.2 * sin(TIME * 4.0);
+		float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 2.0);
+		EMISSION += (col * 0.45 + vec3(1.0, 0.78, 0.42) * (0.06 + rim * 1.4)) * highlight * pulse;
 	}
 
 	if (wet_surface > 0.0 && od_wetness > 0.001) {

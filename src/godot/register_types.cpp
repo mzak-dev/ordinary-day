@@ -33,7 +33,7 @@ static void uninitialize_module(ModuleInitializationLevel level) {
 }
 
 extern "C" {
-GDExtensionBool GDE_EXPORT ordinary_day_library_init(GDExtensionInterfaceGetProcAddress get_proc_address, GDExtensionClassLibraryPtr library, GDExtensionInitialization *initialization) {
+GDExtensionBool GDE_EXPORT incel_library_init(GDExtensionInterfaceGetProcAddress get_proc_address, GDExtensionClassLibraryPtr library, GDExtensionInitialization *initialization) {
 	GDExtensionBinding::InitObject init_obj(get_proc_address, library, initialization);
 	init_obj.register_initializer(initialize_module);
 	init_obj.register_terminator(uninitialize_module);

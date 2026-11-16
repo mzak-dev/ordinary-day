@@ -32,6 +32,12 @@ public:
 
 	Dictionary get_segment(const String &id) const;
 	Dictionary get_link_def(const String &id) const;
+	// [{index, name, acts, pos}] for every usable prop.
+	Array get_interactables() const;
+	// Glow on one interactable (-1 = none).
+	void set_highlight(int index);
+	// Openings the player can walk through front-to-back (world.json "passages").
+	Array get_passages() const { return world_.get("passages", Array()); }
 	// Link ends on `seg` within `radius` of x: [{id, from_a, key, label, ok, why, x}].
 	Array find_links(const String &seg, double x, double radius = 0.8) const;
 	void set_door_open(const String &link_id, bool open);
@@ -71,6 +77,27 @@ private:
 	std::map<String, Ref<ArrayMesh>> mesh_cache_;
 	std::map<String, AnimatedDoor *> doors_;
 	std::vector<CutawayBuilding *> buildings_;
+	// Props in front of an inner wall (panels, pictures, furniture) dissolve with it.
+	struct WallProp {
+		MeshInstance3D *mesh = nullptr;
+		Ref<ShaderMaterial> mat;
+		CutawayBuilding *building = nullptr;
+		int floor = 0;
+		float alpha = 1.0f;
+	};
+	std::vector<WallProp> wall_props_;
+	// Props the player can use (world.json props with "acts").
+	struct Interactable {
+		MeshInstance3D *mesh = nullptr;
+		Ref<ShaderMaterial> mat;
+		String name;
+		PackedStringArray acts;
+		Vector3 top; // where the prompt card sits
+		float glow = 0.0f, target = 0.0f;
+	};
+	std::vector<Interactable> interactables_;
+	std::map<MeshInstance3D *, Ref<ShaderMaterial>> own_mats_;
+	Ref<ShaderMaterial> own_material(MeshInstance3D *mi);
 	std::vector<SpotLight3D *> street_lights_;
 	std::vector<NpcActor> npcs_;
 	Node3D *bus_ = nullptr;
@@ -83,7 +110,7 @@ private:
 	void build_doors();
 	void build_npcs();
 	void on_state_changed();
-	Ref<ArrayMesh> prop_mesh(const String &name);
+	Ref<ArrayMesh> prop_mesh(const String &name, float voxel_size = 0.0625f);
 };
 
 } // namespace godot

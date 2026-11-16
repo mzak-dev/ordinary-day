@@ -1,0 +1,16 @@
+[configuration]
+
+entry_symbol = "incel_library_init"
+compatibility_minimum = "4.5"
+reloadable = true
+
+[libraries]
+
+macos.debug.arm64 = "res://bin/libincel.macos.template_debug.arm64.dylib"
+macos.release.arm64 = "res://bin/libincel.macos.template_release.arm64.dylib"
+macos.debug.x86_64 = "res://bin/libincel.macos.template_debug.x86_64.dylib"
+macos.release.x86_64 = "res://bin/libincel.macos.template_release.x86_64.dylib"
+windows.debug.x86_64 = "res://bin/libincel.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://bin/libincel.windows.template_release.x86_64.dll"
+linux.debug.x86_64 = "res://bin/libincel.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://bin/libincel.linux.template_release.x86_64.so"

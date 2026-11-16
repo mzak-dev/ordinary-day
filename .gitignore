@@ -13,3 +13,4 @@ game/.godot/
 tools/Godot.app/
 
 .DS_Store
+*.obj

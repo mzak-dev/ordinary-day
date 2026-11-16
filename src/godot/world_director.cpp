@@ -63,6 +63,9 @@ void WorldDirector::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_segment", "id"), &WorldDirector::get_segment);
 	ClassDB::bind_method(D_METHOD("get_link_def", "id"), &WorldDirector::get_link_def);
+	ClassDB::bind_method(D_METHOD("get_passages"), &WorldDirector::get_passages);
+	ClassDB::bind_method(D_METHOD("get_interactables"), &WorldDirector::get_interactables);
+	ClassDB::bind_method(D_METHOD("set_highlight", "index"), &WorldDirector::set_highlight);
 	ClassDB::bind_method(D_METHOD("find_links", "seg", "x", "radius"), &WorldDirector::find_links, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("set_door_open", "link_id", "open"), &WorldDirector::set_door_open);
 	ClassDB::bind_method(D_METHOD("refresh"), &WorldDirector::refresh);
@@ -122,13 +125,16 @@ void WorldDirector::_ready() {
 	sim_->connect("state_changed", Callable(this, "on_state_changed"));
 }
 
-Ref<ArrayMesh> WorldDirector::prop_mesh(const String &name) {
-	auto it = mesh_cache_.find(name);
+Ref<ArrayMesh> WorldDirector::prop_mesh(const String &name, float voxel_size) {
+	// Hand-made models drawn on the 5 cm art grid set "vs" in world.json;
+	// the generated placeholders stay at 1/16 m.
+	String key = name + String("@") + String::num(voxel_size, 4);
+	auto it = mesh_cache_.find(key);
 	if (it != mesh_cache_.end()) {
 		return it->second;
 	}
-	Ref<ArrayMesh> m = VoxelModel::build_from_file("res://assets/vox/" + name + ".vox", 0.0625f);
-	mesh_cache_[name] = m;
+	Ref<ArrayMesh> m = VoxelModel::build_from_file("res://assets/vox/" + name + ".vox", voxel_size);
+	mesh_cache_[key] = m;
 	return m;
 }
 
@@ -428,7 +434,7 @@ void WorldDirector::build_props() {
 	for (int64_t i = 0; i < props.size(); ++i) {
 		Dictionary p = props[i];
 		String name = p.get("vox", "");
-		Ref<ArrayMesh> mesh = prop_mesh(name);
+		Ref<ArrayMesh> mesh = prop_mesh(name, float(double(p.get("vs", 0.0625))));
 		if (mesh.is_null()) {
 			continue;
 		}
@@ -437,6 +443,31 @@ void WorldDirector::build_props() {
 		add_child(mi);
 		mi->set_mesh(mesh);
 		mi->set_position(pos);
+		for (CutawayBuilding *b : buildings_) {
+			if (!b->has_back() || pos.x < b->get_x0() || pos.x > b->get_x1()) {
+				continue;
+			}
+			double dz = double(pos.z) - b->get_back_z();
+			if (dz >= 0.0 && double(pos.z) < 0.0) { // everything in the front layer of the block
+				WallProp w;
+				w.mesh = mi;
+				w.mat = own_material(mi);
+				w.building = b;
+				w.floor = int(std::floor(double(pos.y) / b->get_floor_h() + 0.001));
+				wall_props_.push_back(w);
+			}
+		}
+		PackedStringArray acts = p.get("acts", PackedStringArray());
+		if (!acts.is_empty()) {
+			Interactable it;
+			it.mesh = mi;
+			it.mat = own_material(mi);
+			it.name = p.get("name", name);
+			it.acts = acts;
+			AABB box = mesh->get_aabb();
+			it.top = pos + Vector3(0.0f, box.position.y + box.size.y + 0.25f, box.position.z + box.size.z);
+			interactables_.push_back(it);
+		}
 		if (name == "lamp") {
 			SpotLight3D *l = memnew(SpotLight3D);
 			add_child(l);
@@ -458,6 +489,37 @@ void WorldDirector::build_props() {
 	bus_->add_child(bus_mesh);
 	bus_mesh->set_mesh(prop_mesh("bus"));
 	bus_->set_visible(false);
+}
+
+Ref<ShaderMaterial> WorldDirector::own_material(MeshInstance3D *mi) {
+	auto it = own_mats_.find(mi);
+	if (it != own_mats_.end()) {
+		return it->second;
+	}
+	Ref<ShaderMaterial> m = make_voxel_material();
+	mi->set_material_override(m);
+	own_mats_[mi] = m;
+	return m;
+}
+
+Array WorldDirector::get_interactables() const {
+	Array out;
+	for (size_t i = 0; i < interactables_.size(); ++i) {
+		const Interactable &it = interactables_[i];
+		Dictionary d;
+		d["index"] = int(i);
+		d["name"] = it.name;
+		d["acts"] = it.acts;
+		d["pos"] = it.top;
+		out.push_back(d);
+	}
+	return out;
+}
+
+void WorldDirector::set_highlight(int index) {
+	for (size_t i = 0; i < interactables_.size(); ++i) {
+		interactables_[i].target = int(i) == index ? 1.0f : 0.0f;
+	}
 }
 
 void WorldDirector::build_doors() {
@@ -664,11 +726,19 @@ void WorldDirector::_process(double delta) {
 		if (!a.root->is_visible()) {
 			continue;
 		}
-		a.sprite->set_modulate(Color(1, 1, 1, a.alpha));
 		Vector3 p = a.root->get_global_position();
+		// When the player is in a back room, people standing in front of it fade out too.
+		float ghost = 1.0f;
+		for (CutawayBuilding *b : buildings_) {
+			if (b->has_back() && pp.z < b->get_back_z() + 0.15 && p.z > b->get_back_z() && std::fabs(p.y - pp.y) < 1.0f &&
+					p.x >= b->get_x0() && p.x <= b->get_x1()) {
+				ghost = 0.3f;
+			}
+		}
+		a.sprite->set_modulate(Color(1, 1, 1, a.alpha * ghost));
 		float dx = pp.x - p.x;
 		bool near = std::fabs(dx) < 4.0f && std::fabs(pp.y - p.y) < 1.5f;
-		a.label->set_visible(near && a.alpha > 0.5f);
+		a.label->set_visible(near && a.alpha > 0.5f && ghost > 0.5f);
 		if (near) {
 			a.sprite->set_flip_h(dx < 0);
 		}
@@ -677,11 +747,37 @@ void WorldDirector::_process(double delta) {
 		a.bubble->set_visible(a.has_action && same_place && !near && a.alpha > 0.5f);
 		a.bubble->set_position(Vector3(0, 3.2f + 0.08f * float(std::sin(time_ * 4.0 + a.phase)), 0.05f));
 	}
+	for (Interactable &it : interactables_) {
+		if (std::fabs(it.glow - it.target) > 0.001f) {
+			it.glow += (it.target - it.glow) * std::min(1.0f, float(delta) * 10.0f);
+			if (std::fabs(it.glow - it.target) < 0.01f) {
+				it.glow = it.target;
+			}
+			it.mat->set_shader_parameter("highlight", it.glow);
+		}
+	}
 	if (player) {
 		for (CutawayBuilding *b : buildings_) {
 			bool inside = pp.z < 0.5f && pp.x >= b->get_x0() && pp.x <= b->get_x1();
 			if (inside && !b->is_cutaway()) {
 				b->set_cutaway(true);
+			}
+			// In a back room: dissolve the wall in front of it on that floor.
+			int floor = -1;
+			if (b->has_back() && inside && pp.z < b->get_back_z() + 0.15) {
+				floor = int(std::floor(double(pp.y) / b->get_floor_h() + 0.001));
+			}
+			b->set_inner_open(floor);
+			for (WallProp &w : wall_props_) {
+				if (w.building != b) {
+					continue;
+				}
+				float target = w.floor == floor ? 0.0f : 1.0f;
+				if (std::fabs(w.alpha - target) > 0.001f) {
+					float step = float(delta) * 3.0f;
+					w.alpha = w.alpha < target ? std::min(target, w.alpha + step) : std::max(target, w.alpha - step);
+					w.mat->set_shader_parameter("fade", std::max(0.12f, w.alpha));
+				}
 			}
 		}
 	}

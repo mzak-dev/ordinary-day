@@ -1,0 +1,32 @@
+{
+	"_": "Przedpokoj z dawnego kadru. Jednostka = 1 piksel grafiki = 1 woksel (5 cm). x0 = lewa krawedz, bottom = wiersz dolnej krawedzi (68 = podloga), z = odleglosc przodu modelu od sciany w wokselach.",
+	"voxel": 0.05,
+	"floor_row": 68,
+	"size": [384, 108],
+	"items": [
+		{ "vox": "hall_wall_0", "x0": 0, "w": 192, "d": 2, "bottom": 68, "z": 0 },
+		{ "vox": "hall_wall_1", "x0": 192, "w": 192, "d": 2, "bottom": 68, "z": 0 },
+		{ "vox": "hall_floor_0", "x0": 0, "w": 192, "d": 70, "bottom": 70, "z": 70 },
+		{ "vox": "hall_floor_1", "x0": 192, "w": 192, "d": 70, "bottom": 70, "z": 70 },
+
+		{ "vox": "hall_door1_outside", "x0": 10, "w": 26, "d": 2, "bottom": 68, "z": 2 },
+		{ "vox": "hall_door2_kitchen", "x0": 132, "w": 26, "d": 2, "bottom": 68, "z": 2 },
+		{ "vox": "hall_door3_bathroom", "x0": 231, "w": 26, "d": 2, "bottom": 68, "z": 2 },
+		{ "vox": "hall_door4_basement", "x0": 348, "w": 26, "d": 2, "bottom": 68, "z": 2 },
+
+		{ "vox": "hall_painting7_sunset", "x0": 54, "w": 25, "d": 1, "bottom": 43, "z": 1 },
+		{ "vox": "hall_painting5_bakerolls", "x0": 103, "w": 12, "d": 1, "bottom": 43, "z": 1 },
+		{ "vox": "hall_painting1_abstraction", "x0": 170, "w": 12, "d": 1, "bottom": 43, "z": 1 },
+		{ "vox": "hall_painting6_castle", "x0": 196, "w": 25, "d": 1, "bottom": 43, "z": 1 },
+		{ "vox": "hall_painting2_bubbles", "x0": 266, "w": 12, "d": 1, "bottom": 43, "z": 1 },
+		{ "vox": "hall_painting4_spaceship", "x0": 297, "w": 12, "d": 1, "bottom": 43, "z": 1 },
+		{ "vox": "hall_painting3_11", "x0": 326, "w": 12, "d": 1, "bottom": 43, "z": 1 },
+
+		{ "vox": "hall_shoes_shelf", "x0": 72, "w": 34, "d": 7, "bottom": 68, "z": 7 },
+		{ "vox": "hall_shoes", "x0": 78, "w": 22, "d": 4, "bottom": 68, "z": 13 },
+		{ "vox": "hall_commode", "x0": 166, "w": 56, "d": 9, "bottom": 68, "z": 9 },
+		{ "vox": "hall_flowerpot", "x0": 183, "w": 7, "d": 5, "bottom": 45, "z": 7 },
+		{ "vox": "hall_familyphoto", "x0": 204, "w": 9, "d": 1, "bottom": 45, "z": 4 },
+		{ "vox": "hall_chandelier", "x0": 184, "w": 22, "d": 5, "bottom": 12, "z": 24, "light": "#ffe9a8" }
+	]
+}

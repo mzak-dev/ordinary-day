@@ -2,6 +2,7 @@ extends Node
 ## Narzędzia deweloperskie sterowane argumentami po "--":
 ##   --do=act:breakfast,wait:20:00,go:home_door:b,walk:b2f:8,take:umbrella,
 ##        key:move_up,hud:breakfast,delay:1.5,shot:res://../build/a.png
+##        hold:move_up:1.5 (trzyma klawisz przez 1,5 s), cam:11:0.12 (kamera we wnętrzu)
 ##   --shot=res://../build/shot.png   (zrzut po wykonaniu komend i wyjście)
 
 @onready var sim: GameSim = get_node("../GameSim")
@@ -9,6 +10,7 @@ extends Node
 @onready var hud: CanvasLayer = get_node("../HUD")
 
 var shot_path := ""
+var held := ""  # action held by "hold:action:seconds"
 var commands: Array = []
 var frames := 0
 var wait_left := 0.0
@@ -80,6 +82,14 @@ func _run(cmd: String) -> void:
 		"nolimit":
 			Session.set_fps_index(2)
 			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		"cam":
+			player.indoor_distance = float(p[1])
+			if p.size() > 2:
+				player.indoor_pitch = float(p[2])
+		"hold":
+			held = p[1]
+			Input.action_press(held)
+			wait_left = float(p[2])
 		"delay":
 			wait_left = float(p[1])
 		"shot":
@@ -93,6 +103,9 @@ func _process(delta: float) -> void:
 	if wait_left > 0.0:
 		wait_left -= delta
 		return
+	if held != "":
+		Input.action_release(held)
+		held = ""
 	while not commands.is_empty() and wait_left <= 0.0:
 		_run(commands.pop_front())
 	if commands.is_empty() and not done and wait_left <= 0.0:

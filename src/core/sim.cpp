@@ -489,7 +489,7 @@ void Sim::load_file(const std::string &name, const Json &root) {
 	if (root.has("start")) {
 		start_ = root["start"];
 	}
-	for (const char *key : { "buildings", "props", "streets", "segments", "links", "areas" }) {
+	for (const char *key : { "buildings", "props", "streets", "segments", "links", "areas", "passages" }) {
 		for (const Json &e : root[key].items()) {
 			Json arr = world_[key];
 			arr.push_back(e);

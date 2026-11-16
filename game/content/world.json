@@ -1,9 +1,13 @@
 {
-	// 1 unit = 1 m. Interiors walk at z=-1.2, streets at z=1.6.
+	// 1 unit = 1 m. Interiors walk at z=-1.2, streets at z=1.6 (the walk line: doors and stairs start there).
+	// "depth" = how far back/forward W/S can walk; "walls" block sideways walking except in their gap;
+	// "passages" join a front segment (a) and a back one (b) through a doorway.
 	// Floors of the block are 3 m high; slab top (walk height) = floor*3 + 0.25.
 	"locations": {
 		"room": { "name": "Twój pokój", "battery": 3, "stash": true, "spawn": { "seg": "b2f", "x": 15.0 } },
 		"kitchen": { "name": "Kuchnia", "battery": 0, "spawn": { "seg": "b2f", "x": 7.5 } },
+		"salon": { "name": "Salon", "battery": 0, "spawn": { "seg": "b2b", "x": 12.0 } },
+		"bathroom": { "name": "Łazienka", "battery": 2, "spawn": { "seg": "b2b", "x": 6.0 } },
 		"stairwell": { "name": "Klatka schodowa", "battery": -1, "spawn": { "seg": "b0", "x": 5.5 } },
 		"halina": { "name": "Mieszkanie pani Haliny", "battery": -1, "spawn": { "seg": "b1", "x": 6.0 } },
 		"ola_flat": { "name": "Mieszkanie na 3. piętrze", "battery": -2, "spawn": { "seg": "b3", "x": 6.0 } },
@@ -19,26 +23,33 @@
 	},
 
 	"segments": [
-		{ "id": "street", "loc": "osiedle", "x0": -24, "x1": 95, "y": 0.0, "z": 1.6, "outdoor": true },
-		{ "id": "b0", "loc": "stairwell", "x0": 0.5, "x1": 7.5, "y": 0.25, "z": -1.2 },
-		{ "id": "b1s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 3.25, "z": -1.2 },
-		{ "id": "b1", "loc": "halina", "x0": 4.4, "x1": 17.5, "y": 3.25, "z": -1.2 },
-		{ "id": "b2s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 6.25, "z": -1.2 },
-		{ "id": "b2f", "loc": "kitchen", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -1.2 },
-		{ "id": "b3s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 9.25, "z": -1.2 },
-		{ "id": "b3", "loc": "ola_flat", "x0": 4.4, "x1": 17.5, "y": 9.25, "z": -1.2 },
-		{ "id": "shop", "loc": "shop", "x0": 24.5, "x1": 31.5, "y": 0.25, "z": -1.2 },
-		{ "id": "gym", "loc": "gym", "x0": 36.5, "x1": 49.5, "y": 0.25, "z": -1.2 },
-		{ "id": "uni_street", "loc": "kampus", "x0": 195, "x1": 262, "y": 0.0, "z": 1.6, "outdoor": true },
-		{ "id": "uni0", "loc": "uni", "x0": 210.5, "x1": 229.5, "y": 0.25, "z": -1.2 },
-		{ "id": "uni1", "loc": "library", "x0": 210.5, "x1": 229.5, "y": 3.75, "z": -1.2 },
-		{ "id": "cafe", "loc": "cafe", "x0": 238.5, "x1": 249.5, "y": 0.25, "z": -1.2 }
+		{ "id": "street", "loc": "osiedle", "x0": -24, "x1": 95, "y": 0.0, "z": 1.6, "depth": [ 0.4, 2.8 ], "outdoor": true },
+		{ "id": "b0", "loc": "stairwell", "x0": 0.5, "x1": 7.5, "y": 0.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b1s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 3.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b1", "loc": "halina", "x0": 4.4, "x1": 17.5, "y": 3.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "b2s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 6.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b2f", "loc": "kitchen", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -1.2, "depth": [ -3.6, -0.6 ], "walls": [ { "x": 11.0, "gap": [ -1.9, -0.8 ] } ] },
+		{ "id": "b2b", "loc": "salon", "x0": 4.4, "x1": 17.5, "y": 6.25, "z": -6.3, "depth": [ -7.0, -5.6 ], "walls": [ { "x": 7.75, "gap": [ -7.05, -5.95 ] } ] },
+		{ "id": "b3s", "loc": "stairwell", "x0": 0.5, "x1": 3.6, "y": 9.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "b3", "loc": "ola_flat", "x0": 4.4, "x1": 17.5, "y": 9.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "shop", "loc": "shop", "x0": 24.5, "x1": 31.5, "y": 0.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "gym", "loc": "gym", "x0": 36.5, "x1": 49.5, "y": 0.25, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "uni_street", "loc": "kampus", "x0": 195, "x1": 262, "y": 0.0, "z": 1.6, "depth": [ 0.4, 2.8 ], "outdoor": true },
+		{ "id": "uni0", "loc": "uni", "x0": 210.5, "x1": 229.5, "y": 0.25, "z": -1.2, "depth": [ -2.6, -0.6 ] },
+		{ "id": "uni1", "loc": "library", "x0": 210.5, "x1": 229.5, "y": 3.75, "z": -1.2, "depth": [ -3.6, -0.6 ] },
+		{ "id": "cafe", "loc": "cafe", "x0": 238.5, "x1": 249.5, "y": 0.25, "z": -1.2, "depth": [ -3.6, -0.6 ] }
 	],
 
 	"areas": [
 		{ "seg": "b2f", "x0": 11.0, "x1": 18.0, "loc": "room" },
+		{ "seg": "b2b", "x0": 4.0, "x1": 7.75, "loc": "bathroom" },
 		{ "seg": "street", "x0": 53.0, "x1": 61.0, "loc": "bus_stop" },
 		{ "seg": "street", "x0": 63.0, "x1": 96.0, "loc": "park" }
+	],
+
+	"passages": [
+		{ "a": "b2f", "b": "b2b", "x0": 9.95, "x1": 10.8, "z": -4.9 },
+		{ "a": "b2f", "b": "b2b", "x0": 13.05, "x1": 13.95, "z": -4.9 }
 	],
 
 	"links": [
@@ -97,20 +108,32 @@
 
 	"buildings": [
 		{
-			"id": "blok", "x0": 0, "x1": 18, "floors": 4, "floor_h": 3.0, "z0": -5.0, "z1": 0.0,
+			"id": "blok", "x0": 0, "x1": 18, "floors": 4, "floor_h": 3.0, "z0": -8.0, "z1": 0.0, "back_z": -5.0,
 			"open": "always", "roof_details": true, "stair_hole": { "x0": 0.25, "x1": 2.9 }, "wall": "#b8b0a0", "facade": "#d4ccb8", "accent": "#7d9bb0",
 			"doors": [ 6.0 ],
-			"partitions": [ { "floor": 0, "x": 8, "door": false }, { "floor": 1, "x": 4 }, { "floor": 2, "x": 4 }, { "floor": 2, "x": 11 }, { "floor": 3, "x": 4 } ],
+			"partitions": [ { "floor": 0, "x": 8, "door": false }, { "floor": 1, "x": 4 }, { "floor": 2, "x": 4 }, { "floor": 2, "x": 11, "front_only": true }, { "floor": 3, "x": 4 } ],
 			"rooms": [
 				{ "floor": 0, "x0": 0, "x1": 8, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
 				{ "floor": 0, "x0": 8, "x1": 18, "wall": "#77716a", "floor_col": "#4c4945", "floor_kind": "plain", "light": "", "window": false },
 				{ "floor": 1, "x0": 0, "x1": 4, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
-				{ "floor": 1, "x0": 4, "x1": 18, "wall": "#c9a98a", "low": "#a8866a", "floor_col": "#8a5a3c", "light": "#ffcf8a" },
+				{ "floor": 1, "x0": 4, "x1": 18, "wall": "#c9a98a", "low": "#a8866a", "floor_col": "#8a5a3c", "light": "#ffcf8a", "doorways": [ 11.6 ] },
 				{ "floor": 2, "x0": 0, "x1": 4, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
-				{ "floor": 2, "x0": 4, "x1": 11, "wall": "#ddd6bb", "low": "#9fb7a8", "floor_col": "#a39a8c", "floor_kind": "tiles", "light": "#ffe0a0" },
-				{ "floor": 2, "x0": 11, "x1": 18, "wall": "#46506b", "floor_col": "#5b4a3d", "light": "#a8c0ff" },
+				{ "floor": 2, "x0": 4, "x1": 11, "wall": "#ddd6bb", "low": "#9fb7a8", "floor_col": "#a39a8c", "floor_kind": "tiles", "light": "#ffe0a0", "doorways": [ 10.4 ] },
+				{ "floor": 2, "x0": 11, "x1": 18, "wall": "#46506b", "floor_col": "#5b4a3d", "light": "#a8c0ff", "doorways": [ 13.5 ] },
 				{ "floor": 3, "x0": 0, "x1": 4, "wall": "#e6dfc8", "low": "#5f8a6a", "floor_col": "#7a756d", "floor_kind": "terrazzo", "light": "#ffe9b0" },
-				{ "floor": 3, "x0": 4, "x1": 18, "wall": "#d9a7a0", "floor_col": "#9c7b5a", "light": "#ffb0d0" }
+				{ "floor": 3, "x0": 4, "x1": 18, "wall": "#d9a7a0", "floor_col": "#9c7b5a", "light": "#ffb0d0", "doorways": [ 12.4 ] }
+			],
+			"_back_rooms": "Trzecia warstwa: pokoje za tymi, po których się chodzi. Widać je przez przejścia (doorways). open = ta sama przestrzeń co pokój z przodu.",
+			"back_rooms": [
+				{ "floor": 0, "x0": 0, "x1": 8, "open": true },
+				{ "floor": 0, "x0": 8, "x1": 18, "open": true },
+				{ "floor": 1, "x0": 0, "x1": 4, "open": true },
+				{ "floor": 1, "x0": 4, "x1": 18, "wall": "#b9a48c", "low": "#8f7a64", "floor_col": "#7a5236", "light": "#ffc77a", "window": true },
+				{ "floor": 2, "x0": 0, "x1": 4, "open": true },
+				{ "floor": 2, "x0": 4, "x1": 7.75, "wall": "#c6bdaa", "floor_col": "#9a9ca3", "floor_kind": "tiles", "light": "#eef2ff" },
+				{ "floor": 2, "x0": 7.75, "x1": 18, "wall": "#013a02", "floor_col": "#554c54", "floor_kind": "plain", "light": "#ffe9a8", "divider": true, "divider_door": true },
+				{ "floor": 3, "x0": 0, "x1": 4, "open": true },
+				{ "floor": 3, "x0": 4, "x1": 18, "wall": "#c99a94", "floor_col": "#8a6a4c", "light": "#ff9fc4", "window": true }
 			]
 		},
 		{
@@ -153,20 +176,48 @@
 		{ "vox": "tv_old", "x": 6.4, "y": 3.25, "z": -4.4 },
 		{ "vox": "cabinet", "x": 13.5, "y": 3.25, "z": -4.5 },
 		{ "vox": "plant", "x": 16.6, "y": 3.25, "z": -4.3 },
-		{ "vox": "cat", "x": 11.2, "y": 3.25, "z": -3.5 },
+		{ "vox": "cat", "x": 11.2, "y": 3.25, "z": -3.5, "name": "Filemon", "acts": [ "deliver_cat_food" ] },
 
 		{ "vox": "fridge", "x": 5.0, "y": 6.25, "z": -4.4 },
 		{ "vox": "counter", "x": 6.4, "y": 6.25, "z": -4.5 },
 		{ "vox": "stove", "x": 7.6, "y": 6.25, "z": -4.5 },
-		{ "vox": "table", "x": 9.3, "y": 6.25, "z": -3.8 },
+		{ "vox": "table", "x": 9.3, "y": 6.25, "z": -3.8, "name": "Stół", "acts": [ "breakfast", "dinner", "sunday_dinner", "evening_tea" ] },
 		{ "vox": "chair", "x": 8.4, "y": 6.25, "z": -3.8 },
 		{ "vox": "chair", "x": 10.2, "y": 6.25, "z": -3.8 },
-		{ "vox": "desk_pc", "x": 12.4, "y": 6.25, "z": -4.4 },
-		{ "vox": "wardrobe", "x": 14.3, "y": 6.25, "z": -4.5 },
-		{ "vox": "bed", "x": 16.4, "y": 6.25, "z": -4 },
-		{ "vox": "poster", "x": 15.2, "y": 7.8, "z": -4.7 },
+		{ "vox": "desk_pc", "x": 12.4, "y": 6.25, "z": -4.4, "name": "Komputer", "acts": [ "play_short", "play_long", "commission_work", "study_room", "project_room" ] },
+		{ "vox": "wardrobe", "x": 14.65, "y": 6.25, "z": -4.4, "name": "Szafa", "acts": [ "pack_move", "pack_secret" ] },
+		{ "vox": "bed", "x": 16.4, "y": 6.25, "z": -4, "name": "Łóżko", "acts": [ "sleep", "nap" ] },
+		{ "vox": "poster", "x": 15.75, "y": 7.6, "z": -4.66 },
 
-		{ "vox": "sofa", "x": 10.5, "y": 9.25, "z": -4.2 },
+		{ "vox": "flat_kitchen_wall", "vs": 0.05, "x": 7.5, "y": 6.25, "z": -4.725 },
+		{ "vox": "hall_painting5_bakerolls", "vs": 0.05, "x": 9.0, "y": 7.6, "z": -4.675 },
+		{ "vox": "flat_room_wall", "vs": 0.05, "x": 14.425, "y": 6.25, "z": -4.725 },
+		{ "vox": "hall_painting4_spaceship", "vs": 0.05, "x": 12.2, "y": 7.95, "z": -4.675 },
+		{ "vox": "hall_painting3_11", "vs": 0.05, "x": 16.9, "y": 7.6, "z": -4.675 },
+
+		{ "vox": "flat_bath_wall", "vs": 0.05, "x": 5.875, "y": 6.25, "z": -7.725 },
+		{ "vox": "bath_bath", "vs": 0.05, "x": 5.25, "y": 6.25, "z": -7.4 },
+		{ "vox": "bath_cabinet", "vs": 0.05, "x": 5.25, "y": 7.65, "z": -7.6 },
+		{ "vox": "bath_sink", "vs": 0.05, "x": 6.65, "y": 6.25, "z": -7.5 },
+		{ "vox": "bath_mirror", "vs": 0.05, "x": 6.65, "y": 7.6, "z": -7.675 },
+		{ "vox": "bath_lamp", "vs": 0.05, "x": 6.65, "y": 8.35, "z": -7.65 },
+		{ "vox": "bath_toilet", "vs": 0.05, "x": 7.3, "y": 6.25, "z": -7.45 },
+
+		{ "vox": "flat_hall_wall", "vs": 0.05, "x": 12.8, "y": 6.25, "z": -7.725 },
+		{ "vox": "hall_chandelier", "vs": 0.05, "x": 12.75, "y": 8.45, "z": -6.5 },
+		{ "vox": "hall_shoes_shelf", "vs": 0.05, "x": 8.85, "y": 6.25, "z": -7.575 },
+		{ "vox": "hall_shoes", "vs": 0.05, "x": 8.85, "y": 6.3, "z": -7.45 },
+		{ "vox": "hall_painting7_sunset", "vs": 0.05, "x": 8.85, "y": 7.6, "z": -7.675 },
+		{ "vox": "hall_commode", "vs": 0.05, "x": 11.0, "y": 6.25, "z": -7.525 },
+		{ "vox": "tv_old", "x": 13.3, "y": 6.25, "z": -7.35 },
+		{ "vox": "hall_flowerpot", "vs": 0.05, "x": 12.0, "y": 7.4, "z": -7.6 },
+		{ "vox": "hall_familyphoto", "vs": 0.05, "x": 10.1, "y": 7.4, "z": -7.65 },
+		{ "vox": "sofa", "x": 15.6, "y": 6.25, "z": -7.25 },
+		{ "vox": "hall_painting6_castle", "vs": 0.05, "x": 15.6, "y": 7.75, "z": -7.675 },
+		{ "vox": "armchair", "x": 17.1, "y": 6.25, "z": -6.9 },
+		{ "vox": "plant", "x": 14.25, "y": 6.25, "z": -7.4 },
+
+		{ "vox": "sofa", "x": 10.5, "y": 9.25, "z": -4.2, "name": "Kanapa", "acts": [ "party_mingle", "share_cake" ] },
 		{ "vox": "speaker", "x": 7.2, "y": 9.25, "z": -4.4 },
 		{ "vox": "bookshelf", "x": 14.0, "y": 9.25, "z": -4.5 },
 		{ "vox": "plant", "x": 16.8, "y": 9.25, "z": -4.3 },
@@ -175,29 +226,29 @@
 		{ "vox": "shop_shelf", "x": 25.6, "y": 0.25, "z": -4.5 },
 		{ "vox": "shop_shelf", "x": 27.9, "y": 0.25, "z": -4.5 },
 		{ "vox": "drinks_fridge", "x": 29.4, "y": 0.25, "z": -4.5 },
-		{ "vox": "shop_counter", "x": 30.6, "y": 0.25, "z": -3.9 },
+		{ "vox": "shop_counter", "x": 30.6, "y": 0.25, "z": -3.9, "name": "Kasa", "acts": [ "buy_energy", "buy_snack", "buy_cat_food" ] },
 
-		{ "vox": "treadmill", "x": 41.0, "y": 0.25, "z": -4.1 },
-		{ "vox": "treadmill", "x": 42.8, "y": 0.25, "z": -4.1 },
-		{ "vox": "bench_press", "x": 45.4, "y": 0.25, "z": -3.9 },
+		{ "vox": "treadmill", "x": 41.0, "y": 0.25, "z": -4.1, "name": "Bieżnia", "acts": [ "train" ] },
+		{ "vox": "treadmill", "x": 42.8, "y": 0.25, "z": -4.1, "name": "Bieżnia", "acts": [ "train" ] },
+		{ "vox": "bench_press", "x": 45.4, "y": 0.25, "z": -3.9, "name": "Ławeczka", "acts": [ "train" ] },
 		{ "vox": "weight_rack", "x": 48.0, "y": 0.25, "z": -4.5 },
 
 		{ "vox": "stairs_tall", "x": 211.6, "y": 0.25, "z": -4.0 },
 		{ "vox": "board", "x": 225.6, "y": 1.2, "z": -4.7 },
-		{ "vox": "lecture_desk", "x": 216.5, "y": 0.25, "z": -3.8 },
-		{ "vox": "lecture_desk", "x": 219.5, "y": 0.25, "z": -3.8 },
-		{ "vox": "lecture_desk", "x": 225.5, "y": 0.25, "z": -3.8 },
-		{ "vox": "lecture_desk", "x": 228.0, "y": 0.25, "z": -3.8 },
-		{ "vox": "vending", "x": 214.8, "y": 0.25, "z": -4.5 },
+		{ "vox": "lecture_desk", "x": 216.5, "y": 0.25, "z": -3.8, "name": "Ławka w sali", "acts": [ "lecture_mon", "lecture_wed", "colloquium", "present_project" ] },
+		{ "vox": "lecture_desk", "x": 219.5, "y": 0.25, "z": -3.8, "name": "Ławka w sali", "acts": [ "lecture_mon", "lecture_wed", "colloquium", "present_project" ] },
+		{ "vox": "lecture_desk", "x": 225.5, "y": 0.25, "z": -3.8, "name": "Ławka w sali", "acts": [ "lecture_mon", "lecture_wed", "colloquium", "present_project" ] },
+		{ "vox": "lecture_desk", "x": 228.0, "y": 0.25, "z": -3.8, "name": "Ławka w sali", "acts": [ "lecture_mon", "lecture_wed", "colloquium", "present_project" ] },
+		{ "vox": "vending", "x": 214.8, "y": 0.25, "z": -4.5, "name": "Automat", "acts": [ "vending_coffee" ] },
 		{ "vox": "bookshelf", "x": 214.0, "y": 3.75, "z": -4.5 },
 		{ "vox": "bookshelf", "x": 216.0, "y": 3.75, "z": -4.5 },
 		{ "vox": "bookshelf", "x": 226.5, "y": 3.75, "z": -4.5 },
 		{ "vox": "bookshelf", "x": 228.5, "y": 3.75, "z": -4.5 },
-		{ "vox": "table", "x": 221.0, "y": 3.75, "z": -3.8 },
+		{ "vox": "table", "x": 221.0, "y": 3.75, "z": -3.8, "name": "Stół w bibliotece", "acts": [ "study_library", "project_library" ] },
 		{ "vox": "chair", "x": 220.0, "y": 3.75, "z": -3.8 },
 		{ "vox": "chair", "x": 222.0, "y": 3.75, "z": -3.8 },
 
-		{ "vox": "cafe_counter", "x": 247.2, "y": 0.25, "z": -4.1 },
+		{ "vox": "cafe_counter", "x": 247.2, "y": 0.25, "z": -4.1, "name": "Lada", "acts": [ "shift_tue", "shift_sat", "cafe_coffee" ] },
 		{ "vox": "coffee_machine", "x": 248.6, "y": 1.35, "z": -4.4 },
 		{ "vox": "table", "x": 243.0, "y": 0.25, "z": -3.8 },
 		{ "vox": "chair", "x": 242.1, "y": 0.25, "z": -3.8 },
@@ -214,10 +265,10 @@
 		{ "vox": "bus_shelter", "x": 57.0, "y": 0.0, "z": -0.3 },
 		{ "vox": "tree", "x": 65.0, "y": 0.0, "z": -3.7 },
 		{ "vox": "tree", "x": 69.5, "y": 0.0, "z": -5.5 },
-		{ "vox": "bench", "x": 71.0, "y": 0.0, "z": 0.4 },
+		{ "vox": "bench", "x": 71.0, "y": 0.0, "z": 0.4, "name": "Ławka", "acts": [ "sit_bench", "read_book" ] },
 		{ "vox": "lamp", "x": 74.0, "y": 0.0, "z": 0.5 },
 		{ "vox": "tree", "x": 77.0, "y": 0.0, "z": -1.6 },
-		{ "vox": "bench", "x": 81.0, "y": 0.0, "z": 0.4 },
+		{ "vox": "bench", "x": 81.0, "y": 0.0, "z": 0.4, "name": "Ławka", "acts": [ "sit_bench", "read_book" ] },
 		{ "vox": "tree", "x": 84.0, "y": 0.0, "z": -5 },
 		{ "vox": "tree", "x": 89.0, "y": 0.0, "z": -1.8 },
 		{ "vox": "tree", "x": 93.5, "y": 0.0, "z": -4.5 },
