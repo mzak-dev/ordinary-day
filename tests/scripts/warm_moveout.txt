@@ -1,0 +1,217 @@
+# Ścieżka „ciepłej wyprowadzki”: siłownia → Kuba → domówka → Ola → pokój.
+# Poniedziałek
+take gym_pass
+take student_id
+take wallet
+walk b2f 8
+act breakfast
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+go block_door b
+go bus a
+go uni_door a
+until 0 09:30
+act lecture_mon
+expect project_assigned
+go uni_door b
+go bus b
+walk street 39
+until 0 17:00
+go gym_door a
+act train
+expect met_kuba
+go gym_door b
+walk street 6
+go block_door a
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 8
+act dinner
+walk b2f 14
+act project_room
+act sleep
+
+# Wtorek: siatki pani Haliny, zmiana w kawiarni
+walk b2f 8
+act breakfast
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+until 1 10:00
+act help_halina
+expect helped_halina
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 14
+act study_room
+until 1 14:30
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+go block_door b
+walk street 57
+go bus a
+walk uni_street 241
+go cafe_door a
+until 1 15:30
+act shift_tue
+expect read_kuba_party
+go cafe_door b
+walk uni_street 205
+go bus b
+walk street 6
+go block_door a
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 8
+act evening_tea
+walk b2f 14
+act sleep
+
+# Środa: sernik, nauka, domówka
+stash gym_pass
+stash student_id
+until 2 10:15
+act study_room
+act project_room
+walk b2f 8
+until 2 17:00
+act dinner
+until 2 20:00
+walk b2f 5
+go home_door b
+go stairs23 a
+go ola_door a
+act party_mingle
+expect know_room_offer
+act share_cake
+expect got_ola_number
+go ola_door b
+go stairs23 b
+go home_door a
+walk b2f 14
+act sleep
+
+# Czwartek: kolokwium, karma dla kota, park
+stash headphones
+take student_id
+walk b2f 8
+act breakfast
+expect halina_request
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+go block_door b
+go bus a
+go uni_door a
+until 3 09:30
+act colloquium
+expect colloq_passed
+go uni_door b
+go bus b
+walk street 27
+go shop_door a
+act buy_cat_food
+go shop_door b
+walk street 6
+go block_door a
+go stairs01 a
+go halina_door a
+act deliver_cat_food
+go halina_door b
+go stairs01 b
+go block_door b
+walk street 70
+until 3 16:00
+act talk_ola_park
+walk street 6
+go block_door a
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 8
+until 3 18:00
+act dinner
+walk b2f 14
+until 3 21:00
+act sleep
+
+# Piątek: prezentacja
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+go block_door b
+go block_door a
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 8
+act breakfast
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+go block_door b
+go bus a
+go uni_door a
+until 4 10:45
+act present_project
+expect project_done
+go uni_door b
+go bus b
+walk street 6
+go block_door a
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 8
+until 4 18:00
+act dinner
+walk b2f 14
+until 4 21:00
+act sleep
+
+# Sobota: zmiana, potem pokój
+walk b2f 5
+go home_door b
+go stairs12 b
+go stairs01 b
+go block_door b
+go bus a
+walk uni_street 241
+go cafe_door a
+until 5 09:30
+act shift_sat
+act accept_room
+expect room_agreed
+go cafe_door b
+walk uni_street 205
+go bus b
+walk street 6
+go block_door a
+go stairs01 a
+go stairs12 a
+go home_door a
+walk b2f 8
+act tell_mom_plan
+act dinner
+walk b2f 14
+until 5 21:00
+act sleep
+
+# Niedziela
+walk b2f 8
+until 6 13:00
+act sunday_dinner
+expect moved_warm
+walk b2f 14
+act pack_move
