@@ -15,6 +15,10 @@ Options
   --depth N     slab thickness in voxels (default 1)
   --rows A:B    use only art rows A..B-1 (top = 0)
   --floor D     lay the picture down as a floor D voxels deep (rows stretch front to back)
+  --stack A:B,C:D,...  rebuild the picture from these row ranges, top to bottom
+                (fits a hand-drawn wall to another room height without redrawing it)
+  --width N     crop or repeat the columns to N art px
+  --hole X0:X1:R0:R1   leave columns X0..X1-1, rows R0..R1-1 empty (window openings)
   --alpha T     pixels with alpha below T are empty (default 128)
   --check       print the style report and write nothing
 
@@ -228,6 +232,22 @@ def main(argv):
         a, b = opts["--rows"].split(":")
         art = art[int(a):int(b)]
         ah = len(art)
+    if "--stack" in opts:
+        rows_out = []
+        for part in opts["--stack"].split(","):
+            a, b = part.split(":")
+            rows_out.extend(art[int(a):int(b)])
+        art = rows_out
+        ah = len(art)
+    if "--width" in opts:
+        n = int(opts["--width"])
+        art = [[row[i % aw] for i in range(n)] for row in art]
+        aw = n
+    if "--hole" in opts:
+        x0, x1, r0, r1 = (int(v) for v in opts["--hole"].split(":"))
+        for r in range(max(0, r0), min(ah, r1)):
+            for x in range(max(0, x0), min(aw, x1)):
+                art[r][x] = (0, 0, 0, 0)
     report(os.path.basename(src), aw, ah, art, scale, off, alpha_cut)
     if "--check" in opts or len(args) < 2:
         return 0
