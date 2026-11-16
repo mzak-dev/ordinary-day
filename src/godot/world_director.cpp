@@ -66,6 +66,7 @@ void WorldDirector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_links", "seg", "x", "radius"), &WorldDirector::find_links, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("set_door_open", "link_id", "open"), &WorldDirector::set_door_open);
 	ClassDB::bind_method(D_METHOD("refresh"), &WorldDirector::refresh);
+	ClassDB::bind_method(D_METHOD("get_npc_anchor", "id"), &WorldDirector::get_npc_anchor);
 	ClassDB::bind_method(D_METHOD("on_state_changed"), &WorldDirector::on_state_changed);
 }
 
@@ -548,6 +549,18 @@ Array WorldDirector::find_links(const String &seg, double x, double radius) cons
 	return out;
 }
 
+Dictionary WorldDirector::get_npc_anchor(const String &id) const {
+	Dictionary d;
+	d["visible"] = false;
+	for (const NpcActor &a : npcs_) {
+		if (a.id == id) {
+			d["visible"] = a.root->is_visible() && a.wanted && a.alpha > 0.5f;
+			d["pos"] = a.root->get_global_position() + Vector3(0, 2.2f, 0);
+		}
+	}
+	return d;
+}
+
 void WorldDirector::refresh() {
 	on_state_changed();
 }
@@ -651,7 +664,7 @@ void WorldDirector::_process(double delta) {
 		}
 		a.sprite->set_frame(std::fmod(time_ + a.phase, 1.4) < 0.7 ? 0 : 2);
 		bool same_place = std::fabs(pp.y - p.y) < 1.5f && std::fabs(dx) < 14.0f;
-		a.bubble->set_visible(a.has_action && same_place && a.alpha > 0.5f);
+		a.bubble->set_visible(a.has_action && same_place && !near && a.alpha > 0.5f);
 		a.bubble->set_position(Vector3(0, 3.2f + 0.08f * float(std::sin(time_ * 4.0 + a.phase)), 0.05f));
 	}
 	if (player) {

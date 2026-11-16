@@ -36,6 +36,8 @@ public:
 	Array find_links(const String &seg, double x, double radius = 0.8) const;
 	void set_door_open(const String &link_id, bool open);
 	Node3D *get_bus() const { return bus_; }
+	// {visible: bool, pos: Vector3 above the head} for HUD prompts.
+	Dictionary get_npc_anchor(const String &id) const;
 	void refresh();
 
 	static float character_pixel_size() { return 0.0625f; }

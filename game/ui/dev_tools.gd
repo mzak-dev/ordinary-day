@@ -71,6 +71,10 @@ func _run(cmd: String) -> void:
 			up.action = p[1]
 			up.pressed = false
 			Input.call_deferred("parse_input_event", up)
+		"menu":
+			hud._open_main_menu()
+		"pause":
+			hud._open_pause()
 		"delay":
 			wait_left = float(p[1])
 		"shot":

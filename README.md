@@ -68,13 +68,22 @@ Na oświetlenie składają się SDFGI i SSIL, mgła wolumetryczna ograniczona do
 
 Kamera jest perspektywiczna (34°, ok. 20 m od sceny, lekko z góry), więc pokoje mają widoczne podłogi, sufity i zbiegające się ściany boczne. Tło ma trzy warstwy: bloki z wielkiej płyty z balkonami i kolorowymi pasami, wieżowce z kominem elektrociepłowni i wieżą kościoła oraz linię drzew. Niebo rysuje własny shader (`sky.gdshader`): gradient, słońce, chmury i gwiazdy.
 
+## Interfejs
+
+- **Menu główne:** Kontynuuj, Nowy tydzień, Jak grać, Wyjdź, na rozmytym tle sceny.
+- **Pauza (Esc):** zapis i wczytanie; gra zapisuje się sama na początku każdego dnia.
+- **Podpowiedzi w świecie:** nad drzwiami i schodami etykieta z klawiszem (kłódka i powód, gdy zamknięte). Nad NPC, z którym można coś zrobić, „!” z daleka i „E · akcja” z bliska.
+- **Pasek skrótów:** licznik akcji w miejscu i odznaka nieprzeczytanych wiadomości.
+- **Karty:** baner miejsca przy wejściu, „Nowa możliwość”, gdy w trakcie pobytu pojawi się nowa akcja, oraz zmiany relacji, przedmioty i konsekwencje.
+- **Menu akcji:** akcje pogrupowane, z kim je robisz, koszt czasu i powód blokady. Sterowanie strzałkami, W/S, 1–9 i E.
+
 ## Testy wizualne
 
 ```sh
 godot --always-on-top --path game -- "--do=key:help,walk:street:6,delay:2,key:move_up,delay:0.5,shot:res://../build/door.png" --shot=res://../build/end.png
 ```
 
-Komendy: `act:`, `hud:` (akcja z animacją HUD), `wait:HH:MM`, `go:link:a|b`, `walk:seg:x`, `take:item`, `key:akcja`, `delay:s`, `shot:ścieżka`. `--always-on-top` jest potrzebne na macOS, bo zasłonięte okno przestaje się renderować.
+Komendy: `act:`, `hud:` (akcja z animacją HUD), `menu`, `pause`, `wait:HH:MM`, `go:link:a|b`, `walk:seg:x`, `take:item`, `key:akcja`, `delay:s`, `shot:ścieżka`. `--always-on-top` jest potrzebne na macOS, bo zasłonięte okno przestaje się renderować.
 
 ## Sterowanie
 
@@ -87,6 +96,7 @@ Komendy: `act:`, `hud:` (akcja z animacją HUD), `wait:HH:MM`, `go:link:a|b`, `w
 | P | telefon |
 | 1–6 | slot ekwipunku (w pokoju: odłóż) |
 | F5 / F9 | zapis / wczytanie |
+| Esc | menu pauzy |
 | F1 | pomoc |
 
 ## Pisanie treści
